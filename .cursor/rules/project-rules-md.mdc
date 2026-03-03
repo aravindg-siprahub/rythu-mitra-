@@ -1,0 +1,220 @@
+---
+alwaysApply: true
+---
+
+These rules define how Cursor should write, fix, refactor, and organize code for this project.
+
+---
+
+## 🔥 GENERAL ARCHITECTURE RULES
+
+- Always use modular, scalable, and maintainable folder structures.
+- All business logic must be separated into services.
+- APIs must be clean, documented, and follow REST standards.
+- Never mix business logic with UI or views.
+- Use async tasks (Celery) for long-running operations.
+- Use strong validation at API boundaries.
+- Write secure, production-grade code always.
+
+---
+
+## 🔵 FRONTEND RULES (React + Vite + Tailwind)
+
+### Component Structure
+- Always use functional components.
+- Use proper file naming: PascalCase.jsx.
+- Keep components lean. Extract logic into hooks.
+- Use TailwindCSS utility classes only.
+- Strictly avoid inline CSS.
+- Prefer composition patterns over large components.
+
+### State Management
+- Use useState/useReducer only when necessary.
+- Avoid prop drilling → use context or custom hooks.
+- Memoize expensive computations.
+- Prevent unnecessary re-renders using React.memo and dependency arrays.
+
+### API Layer
+- All fetch logic must live in `frontend/services/`.
+- Never fetch inside components.
+- Handle loading, error, empty states in UI.
+- Use try/catch with proper error messages from server.
+
+### UX Rules
+- Use toasts for success/error.
+- Always show skeleton loaders.
+- Follow Arvi’s NeoGlass UI theme:
+  - soft glow borders
+  - subtle gradients (blue → purple)
+  - transparency layers (glass effects)
+- Keep UI minimal, clean, aesthetic.
+
+---
+
+## 🟢 BACKEND RULES (Django + DRF)
+
+### API Structure
+- Use ViewSets + Routers.
+- Place all actual logic inside `services.py`.
+- Serializers are ONLY for validation and transformations.
+- No raw logic in views.
+
+### Response Format
+Always use:
+```json
+{
+  "success": true/false,
+  "message": "",
+  "data": {},
+  "errors": {}
+}
+```
+
+### Models
+- Use UUID primary keys.
+- Use `created_at`, `updated_at` timestamps.
+- Use choices for enums.
+- Create separate model for logs/events when needed.
+
+### DB Performance Rules
+- Always use `select_related` and `prefetch_related`.
+- Avoid N+1 queries.
+- Add indexes WHERE necessary.
+- Use transactions for multi-step operations.
+
+---
+
+## 🔥 CELERY & PIPELINE RULES
+
+### Task Rules
+- Never block the main thread.
+- Long operations = Celery task.
+- Always implement:
+  - retries
+  - backoff
+  - timeout
+  - failure logging
+
+### AI Pipelines
+- Must be deterministic.
+- Must validate output of Gemini/LLM.
+- Must retry upon malformed JSON.
+- Never send huge prompt blobs; chunk data.
+- Always log:
+  - input
+  - output
+  - time taken
+  - user
+  - error
+
+### Pipeline Architecture
+Use:
+1. `extract`
+2. `analyze`
+3. `generate`
+4. `store`
+5. `notify`
+
+---
+
+## 🧠 AI AUTOMATION RULES (Gemini + AssemblyAI)
+
+### Transcription
+- All transcripts must include timestamps.
+- Split into segments, chapters, summary.
+- Store transcripts in database cleanly.
+
+### Quiz/Assignment Generation
+- Questions must contain:
+  - question
+  - options
+  - correct answer
+  - explanation
+- Assignments must contain:
+  - task
+  - rubric
+  - evaluation rules
+
+### Prompt Rules
+- Use JSON schema ALWAYS.
+- Avoid hallucinations — require strict outputs.
+- Validate LLM output before saving to DB.
+
+---
+
+## 🟣 SUPABASE + POSTGRES RULES
+
+### SQL Rules
+- Avoid SELECT *
+- Use LIMIT + OFFSET
+- Create proper indexes
+- Use foreign keys
+- Enforce constraints
+
+### RLS (If used)
+- Always check user ID in policies
+- No public access without validation
+
+---
+
+## 🔥 TELEMETRY & HEARTBEAT RULES
+
+### Video Tracking
+- Heartbeat interval must be <= 5 seconds.
+- Store:
+  - duration watched
+  - percentage completion
+  - chapter progress
+  - last timestamp
+
+### Anti-Cheat Rules
+- Detect:
+  - Tab switch
+  - Speed skip
+  - Jump seeking
+  - Multi-device login
+
+### Analytics Rules
+- Store events:
+  - page_load
+  - play
+  - pause
+  - complete
+  - quiz_start
+  - quiz_finish
+  - assignment_upload
+
+---
+
+## 🔐 SECURITY RULES
+
+- Never store secrets in code.
+- Always sanitize input.
+- Apply rate-limiting for important endpoints.
+- Use CSRF protection.
+- Use HTTPS for production.
+- Validate JWT tokens properly.
+- Never send sensitive data to frontend.
+- Escape HTML to prevent XSS.
+
+---
+
+## ⚙️ DEVOPS + DEPLOYMENT RULES
+
+### Docker
+- Use multi-stage Dockerfile.
+- Keep image size small.
+- Use nginx as reverse proxy for production.
+
+### Logs
+- Structured logging with request ID.
+- Do not log sensitive info.
+- Save pipeline logs for debugging.
+
+---
+
+## 🚀 HOW CURSOR SHOULD RESPOND
+- Follow these rules even when user does not mention explicitly.
+- Always generate clean, modular, production-grade code.
+- Ask clarifying questions when necessary.
+- Suggest improvements automatically.

@@ -52,15 +52,9 @@ export default function PageShell({ children, className = "" }) {
             </div>
 
             {/* 5. Content Layer */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className={`relative z-10 pt-28 pb-20 px-4 sm:px-6 lg:px-12 max-w-[1700px] mx-auto ${className}`}
-            >
+            <div className={`relative z-10 flex flex-col min-h-screen px-4 sm:px-6 lg:px-10 xl:px-16 ${className}`}>
                 {children}
-            </motion.div>
+            </div>
         </div>
     );
 }

@@ -1,0 +1,34 @@
+{
+  "version": "v20260228_091036",
+  "training_date": "2026-02-28T09:10:36.109393+00:00",
+  "dataset": "C:\\Users\\Aravind\\Desktop\\rythu-mitra\\backend\\ai\\datasets\\weather_data.csv",
+  "total_rows": 7329,
+  "feature_columns": [
+    "month",
+    "season_encoded",
+    "temp_lag_1",
+    "temp_lag_7",
+    "growing_degree_days",
+    "rainfall_lag_7",
+    "rolling_rainfall_7d",
+    "rolling_rainfall_30d",
+    "heat_index",
+    "humidity"
+  ],
+  "results": {
+    "rainfall": {
+      "mae": 0.0,
+      "rmse": 0.0,
+      "seasonal_baseline_mae": 0.0,
+      "global_mean_mae": 0.0,
+      "beats_seasonal_baseline": false
+    },
+    "temperature": {
+      "mae": 0.006,
+      "rmse": 0.0305,
+      "seasonal_baseline_mae": 2.2414,
+      "beats_seasonal_baseline": true
+    }
+  },
+  "is_active": true
+}

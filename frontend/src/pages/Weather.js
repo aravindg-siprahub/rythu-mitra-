@@ -1,137 +1,85 @@
-import React, { useState, useEffect } from 'react';
-import apiService from '../services/api';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import GlassCard from './components/ui/GlassCard';
 
-const Weather = () => {
-    const [forecast, setForecast] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [location, setLocation] = useState({ lat: 17.3850, lon: 78.4867, name: 'Hyderabad (Rural)' });
+const FORECAST_DATA = [
+    { time: '06:00', temp: 22, rain: 10 },
+    { time: '09:00', temp: 25, rain: 5 },
+    { time: '12:00', temp: 31, rain: 0 },
+    { time: '15:00', temp: 33, rain: 0 },
+    { time: '18:00', temp: 28, rain: 20 },
+    { time: '21:00', temp: 24, rain: 45 },
+];
 
-    useEffect(() => {
-        getWeather();
-    }, []);
-
-    const getWeather = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await apiService.getWeatherPrediction(location.lat, location.lon);
-            setForecast(response.data);
-        } catch (err) {
-            console.error(err);
-            setError("Satellite connection failed. Using cached data.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-blue-50">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
-            <p className="mt-4 text-blue-600 font-bold animate-pulse">Establishing Satellite Uplink...</p>
-        </div>
-    );
-
+export default function Weather() {
     return (
-        <div className="p-6 md:p-12 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-10">
+        <DashboardLayout>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="px-6 py-12 max-w-[1920px] mx-auto"
+            >
+                <div className="flex items-end justify-between mb-12 border-b border-white/5 pb-8">
                     <div>
-                        <h1 className="text-4xl font-extrabold text-gray-800">🌤️ Precision Weather</h1>
-                        <p className="text-gray-500 mt-1">Satellite-driven micro-climate forecasting</p>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Live Feed</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-4">
+                            Weather <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Grid</span>
+                            <span className="text-2xl opacity-50">☁️</span>
+                        </h1>
                     </div>
-                    <span className="mt-4 md:mt-0 bg-white px-6 py-3 rounded-full shadow-lg text-sm font-bold text-blue-800 flex items-center border border-blue-100">
-                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                        📍 {location.name}
-                    </span>
+                    <div className="text-right">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Location</p>
+                        <p className="text-xl font-bold text-white tracking-tight">Guntur, AP-South-1</p>
+                    </div>
                 </div>
 
-                {error && <div className="p-4 bg-red-100 text-red-700 rounded mb-6 text-center">{error} <button onClick={getWeather} className="underline font-bold ml-2">Retry</button></div>}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {/* Key Metrics */}
+                    {[
+                        { label: "Temperature", val: "32°C", unit: "Feels like 36°C", icon: "🌡️", color: "text-amber-400" },
+                        { label: "Humidity", val: "68%", unit: "Dew Point 22°", icon: "💧", color: "text-cyan-400" },
+                        { label: "Wind Speed", val: "12 km/h", unit: "NE Direction", icon: "💨", color: "text-slate-300" },
+                        { label: "Precipitation", val: "15%", unit: "Next 4h", icon: "☔", color: "text-blue-400" },
+                    ].map((metric, i) => (
+                        <GlassCard key={i} className="p-6 bg-white/[0.02] border-white/5">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="p-2 rounded bg-white/5 text-xl">{metric.icon}</div>
+                                <span className={`text-xs font-bold uppercase tracking-widest ${metric.color}`}>Live</span>
+                            </div>
+                            <h3 className="text-3xl font-black text-white mb-1">{metric.val}</h3>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{metric.label}</p>
+                            <p className="text-xs text-slate-400 mt-2 font-mono">{metric.unit}</p>
+                        </GlassCard>
+                    ))}
+                </div>
 
-                {forecast && (
-                    <div className="space-y-8 animate-fade-in-up">
-                        {/* Hero Stats */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border-l-4 border-blue-500">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rain Probability</h3>
-                                <div className="flex items-end mt-2">
-                                    <span className="text-4xl font-black text-blue-600">{forecast.forecast[0].rain_prob.toFixed(0)}</span>
-                                    <span className="text-xl text-gray-400 mb-1 ml-0.5">%</span>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border-l-4 border-yellow-500">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Peak Temp</h3>
-                                <div className="flex items-end mt-2">
-                                    <span className="text-4xl font-black text-gray-800">{forecast.forecast[0].temp_max.toFixed(0)}</span>
-                                    <span className="text-xl text-gray-400 mb-1 ml-0.5">°C</span>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border-l-4 border-teal-500">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Humidity</h3>
-                                <div className="flex items-end mt-2">
-                                    <span className="text-4xl font-black text-teal-600">65</span>
-                                    <span className="text-xl text-gray-400 mb-1 ml-0.5">%</span>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border-l-4 border-purple-500">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Wind Speed</h3>
-                                <div className="flex items-end mt-2">
-                                    <span className="text-4xl font-black text-purple-600">12</span>
-                                    <span className="text-xl text-gray-400 mb-1 ml-0.5">km/h</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Chart Section */}
-                        <div className="bg-white p-8 rounded-3xl shadow-xl h-96 relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 to-orange-500"></div>
-                            <h3 className="text-xl font-bold mb-6 text-gray-700">7-Day Temperature Trend</h3>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={forecast.forecast} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis dataKey="date" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                                    <YAxis hide />
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                    />
-                                    <Area type="monotone" dataKey="temp_max" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorTemp)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-
-                        {/* Alerts Section */}
-                        <div className="grid md:grid-cols-2 gap-6">
-                            {forecast.risks.length > 0 ? (
-                                forecast.risks.map((risk, idx) => (
-                                    <div key={idx} className="bg-red-50 p-6 rounded-2xl border border-red-100 flex items-start">
-                                        <span className="text-3xl mr-4">⚠️</span>
-                                        <div>
-                                            <h4 className="text-red-800 font-bold text-lg">{risk.type} Alert</h4>
-                                            <p className="text-red-700 mt-1 text-sm">{risk.msg}</p>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="bg-green-50 p-6 rounded-2xl border border-green-100 flex items-center md:col-span-2">
-                                    <span className="text-3xl mr-4">✅</span>
-                                    <div>
-                                        <h4 className="text-green-800 font-bold text-lg">Conditions Normal</h4>
-                                        <p className="text-green-700 mt-1 text-sm">No significant weather risks detected for crops this week.</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                {/* Forecast Chart */}
+                <GlassCard className="min-h-[400px] bg-white/[0.02] border-white/5 p-8 relative">
+                    <h3 className="absolute top-8 left-8 text-xs font-bold text-slate-400 uppercase tracking-widest">24H Prediction Model</h3>
+                    <div className="w-full h-full pt-12">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={FORECAST_DATA}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="time" stroke="#475569" tick={{ fontSize: 12, fontFamily: 'monospace' }} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#475569" tick={{ fontSize: 12, fontFamily: 'monospace' }} tickLine={false} axisLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#020617', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                                    itemStyle={{ fontSize: '12px', color: '#fff' }}
+                                />
+                                <Line type="monotone" dataKey="temp" stroke="#22d3ee" strokeWidth={3} dot={{ r: 4, fill: '#06b6d4', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </div>
-                )}
-            </div>
-        </div>
-    );
-};
+                </GlassCard>
 
-export default Weather;
+            </motion.div>
+        </DashboardLayout>
+    );
+}

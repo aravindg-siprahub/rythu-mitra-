@@ -1,0 +1,5 @@
+{
+    "version": "not_trained",
+    "is_active": false,
+    "note": "Run: python manage.py train_kaggle_models --model disease"
+}

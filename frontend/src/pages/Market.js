@@ -1,113 +1,159 @@
 import React, { useState } from 'react';
-import apiService from '../services/api';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from 'recharts';
+import { motion } from 'framer-motion';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Bar } from 'recharts';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import GlassCard from './components/ui/GlassCard';
+import Button from './components/ui/Button';
 
-const Market = () => {
-    const [crop, setCrop] = useState('Rice');
-    const [region, setRegion] = useState('Telangana');
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+// --- MOCK DATA ---
+const MARKET_DATA = [
+    { time: '09:00', price: 2100, vol: 1200 },
+    { time: '10:00', price: 2150, vol: 1500 },
+    { time: '11:00', price: 2120, vol: 900 },
+    { time: '12:00', price: 2200, vol: 2000 },
+    { time: '13:00', price: 2250, vol: 3200 },
+    { time: '14:00', price: 2300, vol: 2800 },
+    { time: '15:00', price: 2380, vol: 4100 },
+];
 
-    const fetchForecast = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await apiService.getMarketForecast(crop, region);
-            setData(response.data);
-        } catch (err) {
-            console.error(err);
-            setError("Market intelligence unavailable. Please try again later.");
-        } finally {
-            setLoading(false);
-        }
-    };
+const ORDER_BOOK = [
+    { price: 2385, size: 450, type: 'ask' },
+    { price: 2384, size: 120, type: 'ask' },
+    { price: 2382, size: 850, type: 'ask' },
+    { price: 2380, size: 1100, type: 'bid' },
+    { price: 2378, size: 500, type: 'bid' },
+    { price: 2375, size: 1200, type: 'bid' },
+];
+
+export default function Market() {
+    const [selectedCrop, setSelectedCrop] = useState('Rice');
+    const [orderType, setOrderType] = useState('limit');
 
     return (
-        <div className="p-6 md:p-12 bg-gray-50 min-h-screen font-sans">
-            <div className="max-w-6xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">📈 Market Intelligence</h1>
-                    <p className="text-gray-500 mt-2 text-lg">AI-driven price forecasting & sell-time optimization</p>
-                </div>
-
-                {/* Controls */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex flex-wrap gap-4 items-end">
-                    <div className="flex-1 min-w-[200px]">
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Crop</label>
-                        <select value={crop} onChange={(e) => setCrop(e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg font-semibold focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option>Rice</option>
-                            <option>Cotton</option>
-                            <option>Maize</option>
-                            <option>Tomato</option>
-                        </select>
-                    </div>
-                    <div className="flex-1 min-w-[200px]">
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Region</label>
-                        <select value={region} onChange={(e) => setRegion(e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg font-semibold focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option>Telangana</option>
-                            <option>Andhra Pradesh</option>
-                        </select>
-                    </div>
-                    <button
-                        onClick={fetchForecast}
-                        disabled={loading}
-                        className={`px-8 py-3 rounded-lg font-bold text-white shadow-lg transform transition active:scale-95 ${loading ? 'bg-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700'}`}
-                    >
-                        {loading ? 'Analyzing Trends...' : 'Predict Prices'}
-                    </button>
-                </div>
-
-                {error && <div className="p-4 bg-red-100 text-red-700 rounded-lg mb-8 text-center font-medium">{error}</div>}
-
-                {data && (
-                    <div className="space-y-8 animate-fade-in-up">
-                        {/* Strategy Card */}
-                        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
+        <DashboardLayout>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="px-6 py-12 max-w-[1920px] mx-auto"
+            >
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 border-b border-white/5 pb-8">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Market Open
                             </div>
-                            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center">
-                                <div>
-                                    <h2 className="text-sm font-bold uppercase tracking-widest text-emerald-100 mb-1">AI Recommendation</h2>
-                                    <div className="text-4xl font-black tracking-tight">{data.best_strategy.action.toUpperCase()}</div>
-                                    <p className="mt-2 text-emerald-100 text-lg">Target Date: <span className="font-bold text-white">{data.best_strategy.best_date}</span></p>
-                                </div>
-                                <div className="mt-6 md:mt-0 text-left md:text-right bg-white/10 p-4 rounded-xl backdrop-blur-sm">
-                                    <span className="block text-sm font-medium text-emerald-100">Projected Gain</span>
-                                    <span className="text-3xl font-bold">+₹{data.best_strategy.expected_gain}</span>
-                                    <span className="text-sm text-emerald-200 block">per quintal</span>
-                                </div>
-                            </div>
+                            <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">Latency: 12ms</span>
                         </div>
+                        <h1 className="text-4xl font-black text-white tracking-tighter flex items-center gap-3">
+                            RythuMitra <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">TradeX</span>
+                        </h1>
+                    </div>
 
-                        {/* Chart */}
-                        <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 h-96">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold text-gray-700">14-Day Price Forecast</h3>
-                                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                    <span className="w-3 h-3 bg-indigo-600 rounded-full"></span>
-                                    <span>Predicted Price</span>
-                                </div>
-                            </div>
+                    <div className="flex gap-1 bg-white/[0.03] p-1 rounded-lg border border-white/5">
+                        {['Rice', 'Cotton', 'Chilli', 'Maize'].map(crop => (
+                            <button
+                                key={crop}
+                                onClick={() => setSelectedCrop(crop)}
+                                className={`px-4 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${selectedCrop === crop
+                                        ? 'bg-purple-600/90 text-white shadow-lg shadow-purple-900/40'
+                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                {crop}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Main Grid */}
+                <div className="grid grid-cols-12 gap-6">
+                    {/* Chart Area */}
+                    <GlassCard className="col-span-12 lg:col-span-8 min-h-[500px] border-white/5 bg-white/[0.02]">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-bold text-white tracking-tight">{selectedCrop} / INR</h2>
+                            <span className="text-2xl font-mono font-bold text-emerald-400">₹2,380.50</span>
+                        </div>
+                        <div className="h-[400px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={data.forecast}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                <AreaChart data={MARKET_DATA}>
+                                    <defs>
+                                        <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                                    <XAxis dataKey="time" stroke="#475569" tick={{ fontSize: 10, fontFamily: 'monospace' }} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#475569" tick={{ fontSize: 10, fontFamily: 'monospace' }} tickLine={false} axisLine={false} orientation="right" />
                                     <Tooltip
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                        contentStyle={{ backgroundColor: '#020617', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px' }}
+                                        itemStyle={{ fontSize: '12px', color: '#fff' }}
                                     />
-                                    <Line type="monotone" dataKey="price" stroke="#4f46e5" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 8 }} />
-                                    <ReferenceLine x={data.best_strategy.best_date} stroke="#10b981" strokeDasharray="3 3" label={{ position: 'top', value: 'OPTIMAL SELL', fill: '#10b981', fontSize: 12, fontWeight: 'bold' }} />
-                                </LineChart>
+                                    <Area type="monotone" dataKey="price" stroke="#a855f7" strokeWidth={2} fill="url(#colorPrice)" />
+                                </AreaChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
+                    </GlassCard>
 
-export default Market;
+                    {/* Order Interface */}
+                    <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+                        {/* Order Book */}
+                        <div className="flex-1 bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+                            <div className="px-4 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Order Book</h3>
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            </div>
+                            <div className="p-2 space-y-0.5 font-mono text-xs">
+                                {ORDER_BOOK.map((row, i) => (
+                                    <div key={i} className="flex justify-between px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group transition-colors">
+                                        <span className={row.type === 'ask' ? 'text-rose-400' : 'text-emerald-400'}>{row.price}</span>
+                                        <span className="text-slate-400 group-hover:text-white">{row.size}</span>
+                                        <div className="w-12 h-3 bg-white/5 rounded-sm overflow-hidden mt-0.5">
+                                            <div className="h-full bg-slate-700" style={{ width: `${Math.random() * 100}%` }}></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Trade Control */}
+                        <div className="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                            <div className="flex gap-2 mb-6 bg-black/40 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setOrderType('limit')}
+                                    className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded transition-all ${orderType === 'limit' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    Limit
+                                </button>
+                                <button
+                                    onClick={() => setOrderType('market')}
+                                    className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded transition-all ${orderType === 'market' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    Market
+                                </button>
+                            </div>
+                            <div className="space-y-4 mb-6">
+                                <div>
+                                    <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5 block">Quantity (Kg)</label>
+                                    <input type="number" className="w-full bg-black/40 border border-white/10 rounded px-4 py-3 text-white text-sm focus:border-blue-500 outline-none transition-colors font-mono" placeholder="0" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <Button className="bg-emerald-600 hover:bg-emerald-500 text-[#020617] w-full py-4 text-xs font-black uppercase tracking-[0.2em] transition-all">
+                                    Buy
+                                </Button>
+                                <Button className="bg-rose-600 hover:bg-rose-500 text-white w-full py-4 text-xs font-black uppercase tracking-[0.2em] transition-all">
+                                    Sell
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        </DashboardLayout>
+    );
+}

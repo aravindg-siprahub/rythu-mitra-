@@ -38,7 +38,7 @@ export default function IndustryGrid() {
                     <motion.div
                         key={i}
                         whileHover={{ y: -8 }}
-                        className="p-10 h-[300px] flex flex-col justify-between group neo-glass border-white/5 rounded-[3rem] cursor-pointer transition-all hover:border-blue-500/30"
+                        className="p-10 h-[300px] flex flex-col justify-between group bg-white/5 backdrop-blur-md border border-white/5 rounded-[2.5rem] cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-blue-500/30 hover:shadow-[0_20px_40px_-10px_rgba(59,130,246,0.2)]"
                         onClick={() => navigate(m.path)}
                     >
                         <div>

@@ -4,26 +4,35 @@
 
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { LanguageProvider } from "./context/LanguageContext";
 import { SimulationProvider } from "./context/SimulationContext";
 import { AlertProvider } from "./pages/alerts";
 import { AIProvider } from "./context/AIContext";
+import { AuthProvider } from "./context/AuthContext";
 import ScrollToAnchor from "./utils/ScrollToAnchor";
+import LandingLayout from "./components/layout/LandingLayout";
+import AppLayout from "./components/layout/AppLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+// Auth Pages (eagerly loaded for fast access)
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 // Core Pages
-const LandingPage = lazy(() => import("./pages/LandingPage"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+const LandingPageNew = lazy(() => import("./pages/LandingPageNew"));
+const CommandCenterDashboard = lazy(() => import("./pages/CommandCenter/CommandCenterDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 
 // Intelligent Modules
-const CropRecommendation = lazy(() => import("./pages/CropRecommendation"));
-const Market = lazy(() => import("./pages/Market"));
-const Weather = lazy(() => import("./pages/Weather"));
-const DiseaseLab = lazy(() => import("./pages/DiseaseLab"));
-const Workers = lazy(() => import("./pages/Workers"));
-const Transport = lazy(() => import("./pages/Transport"));
+const CropRecommendation = lazy(() => import("./modules/crop"));
+const Market = lazy(() => import("./modules/market"));
+const Weather = lazy(() => import("./modules/weather"));
+const DiseaseLab = lazy(() => import("./modules/disease"));
+const Workers = lazy(() => import("./modules/workforce"));
+const Transport = lazy(() => import("./modules/transport"));
+const Governance = lazy(() => import("./modules/governance"));
 const Booking = lazy(() => import("./pages/Booking"));
 const Services = lazy(() => import("./pages/Services"));
 
@@ -52,25 +61,119 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* 1. Landing & Core */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
 
-        {/* 2. Intelligent Agriculture Modules */}
-        <Route path="/crop" element={<CropRecommendation />} />
-        <Route path="/disease" element={<DiseaseLab />} />
-        <Route path="/market" element={<Market />} />
-        <Route path="/weather" element={<Weather />} />
+        {/* ── PUBLIC: Auth Pages (no layout wrapper) ── */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-        {/* 3. Logistics & Services */}
-        <Route path="/workers" element={<Workers />} />
-        <Route path="/transport" element={<Transport />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/services" element={<Services />} />
+        {/* ── PUBLIC: Landing Page ── */}
+        <Route path="/" element={<LandingPageNew />} />
 
-        {/* Catch-all Redirect */}
+        {/* ── PROTECTED: App Pages (require login) ── */}
+        <Route element={<AppLayout />}>
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <CommandCenterDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Intelligent Agriculture Modules */}
+          <Route
+            path="/crop"
+            element={
+              <ProtectedRoute>
+                <CropRecommendation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/disease"
+            element={
+              <ProtectedRoute>
+                <DiseaseLab />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/market"
+            element={
+              <ProtectedRoute>
+                <Market />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/weather"
+            element={
+              <ProtectedRoute>
+                <Weather />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Logistics & Services */}
+          <Route
+            path="/workers"
+            element={
+              <ProtectedRoute>
+                <Workers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/transport"
+            element={
+              <ProtectedRoute>
+                <Transport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/governance"
+            element={
+              <ProtectedRoute>
+                <Governance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/booking"
+            element={
+              <ProtectedRoute>
+                <Booking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/services"
+            element={
+              <ProtectedRoute>
+                <Services />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        {/* ── CATCH-ALL ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
@@ -83,12 +186,14 @@ export default function App() {
       <AlertProvider>
         <SimulationProvider>
           <AIProvider>
-            <BrowserRouter>
-              <ScrollToAnchor />
-              <Suspense fallback={<LoadingScreen />}>
-                <AnimatedRoutes />
-              </Suspense>
-            </BrowserRouter>
+            <AuthProvider>
+              <BrowserRouter>
+                <ScrollToAnchor />
+                <Suspense fallback={<LoadingScreen />}>
+                  <AnimatedRoutes />
+                </Suspense>
+              </BrowserRouter>
+            </AuthProvider>
           </AIProvider>
         </SimulationProvider>
       </AlertProvider>

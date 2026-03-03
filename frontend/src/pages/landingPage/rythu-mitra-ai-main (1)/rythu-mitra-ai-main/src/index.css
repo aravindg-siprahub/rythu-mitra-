@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 120 14% 97%;
+    --foreground: 220 26% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 26% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 26% 10%;
+    --primary: 142 72% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 120 14% 97%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 20% 88%;
+    --input: 142 20% 88%;
+    --ring: 142 72% 37%;
+    --radius: 0.75rem;
+    --sky: 199 89% 48%;
+    --green-light: 138 76% 97%;
+    --green-dark: 144 69% 20%;
+    --footer-bg: 140 33% 9%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 140 33% 6%;
+    --foreground: 0 0% 95%;
+    --card: 140 20% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 140 20% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142 72% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 140 20% 15%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 140 20% 20%;
+    --input: 140 20% 20%;
+    --ring: 142 72% 37%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+  .font-mono-stats {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+  .glass-card {
+    @apply backdrop-blur-md border;
+    background: hsla(0, 0%, 100%, 0.8);
+    border-color: hsla(0, 0%, 100%, 0.3);
+  }
+  .glass-card-dark {
+    @apply backdrop-blur-md border;
+    background: hsla(0, 0%, 100%, 0.1);
+    border-color: hsla(0, 0%, 100%, 0.15);
+  }
+  .card-shadow {
+    box-shadow: 0 4px 40px rgba(22, 163, 74, 0.12);
+  }
+  .card-shadow-hover {
+    box-shadow: 0 8px 50px rgba(22, 163, 74, 0.2);
+  }
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine-effect::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 40%;
+    height: 200%;
+    background: linear-gradient(90deg, transparent, hsla(0, 0%, 100%, 0.25), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+  }
+  .shine-effect:hover::after {
+    left: 120%;
+  }
+  .section-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+  .section-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .marquee {
+    display: flex;
+    animation: marquee-scroll 30s linear infinite;
+  }
+  .marquee-fast {
+    display: flex;
+    animation: marquee-scroll 15s linear infinite;
+  }
+  .green-gradient-bg {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--green-dark)));
+  }
+  .green-gradient-text-bg {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes bounce-arrow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(12px); }
+}
+
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  25% { transform: translateY(-20px) translateX(10px); opacity: 0.6; }
+  50% { transform: translateY(-10px) translateX(-5px); opacity: 0.4; }
+  75% { transform: translateY(-30px) translateX(15px); opacity: 0.5; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

@@ -13,18 +13,18 @@ const services = [
     { title: "Labor Connect", desc: "Workforce hiring", icon: "👷", path: "/workers", color: "text-orange-400" },
 ];
 
-import TopNav from "../components/dashboard/TopNav";
+import Navbar from "../components/layout/Navbar";
 
 export default function Services() {
     const navigate = useNavigate();
 
     return (
         <PageShell>
-            <TopNav />
+            <Navbar />
             <div className="max-w-5xl mx-auto">
 
                 <div className="mb-16">
-                    <h1 className="text-6xl font-black text-white tracking-tighter uppercase italic neo-dark-headline">Enterprise <span className="text-brand-gradient">Modules_</span></h1>
+                    <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase italic neo-dark-headline">Enterprise <span className="text-brand-gradient">Modules_</span></h1>
                     <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-2">Direct node access to OS core intelligence.</p>
                 </div>
 

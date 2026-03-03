@@ -1,0 +1,5 @@
+{
+  "name": "generate-celery-task",
+  "description": "Create a Celery task with retries, backoff, logging, and idempotency.",
+  "prompt": "Generate a production-ready Celery task.\n\nTask Name: {{input}}\n\nFollow Arvi's pipeline rules:\n- Use @shared_task\n- Add retry logic\n- Add exponential backoff\n- Add proper logging\n- Add error handling\n- Make task idempotent\n- Add type hints\n- Connect task to Django services\n\nOutput ONLY the full code for tasks.py."
+}

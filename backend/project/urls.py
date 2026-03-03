@@ -10,12 +10,13 @@ urlpatterns = [
     path('health/', health_check, name='health_check'),
     
     # API Version 1
-    path('api/v1/ai/', include('ai.urls')),
+    path('api/v1/market/', include('market.urls')),
+    path('api/v1/ai/', include('ai.urls')), 
     path('api/v1/auth/', include('authapp.urls')),
     
-    # Simulations for Verification Pass
-    path('api/v1/farmers/', include('project.simulation_urls')),
+    path('api/v1/farmers/', include('farmers.urls')),
     path('api/v1/workers/', include(workers_patterns)),
+    path('api/v1/transport/', include('transport.urls')),
 ]
 
 if settings.DEBUG:

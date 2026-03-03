@@ -1,0 +1,2 @@
+Status: 201
+Content: {"message":"Registration successful","token":null,"refresh_token":null,"user":{"id":"d479c783-03e7-411d-962d-2e9363dda812","username":"aravind9915","full_name":"Aravind Test","email":"aravind.test9915@gmail.com","state":"AP","district":"Madanapalle","primary_crop":"","profile_complete":true}}

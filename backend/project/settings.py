@@ -26,6 +26,8 @@ ALLOWED_HOSTS = [
 # APPS & MIDDLEWARE
 # ============================================
 INSTALLED_APPS = [
+    "daphne", # Must be first
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -40,7 +42,8 @@ INSTALLED_APPS = [
     "market",
     "workers",
     "transport",
-    "ai",
+    "ai", 
+    "ml_factory",
 ]
 
 MIDDLEWARE = [
@@ -53,37 +56,84 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "farmers.middleware.AuditLogMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
+
+# DRF Rate Limiting
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "EXCEPTION_HANDLER": "project.utils.custom_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle"
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "1000/day",
+        "burst": "60/min"
+    }
+}
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
 WSGI_APPLICATION = "project.wsgi.application"
-
-# ============================================
-# DATABASE & CACHE
-# ============================================
-import dj_database_url
-
-# ... (rest of imports)
+ASGI_APPLICATION = "project.asgi.application"
 
 # ============================================
 # DATABASE & CACHE
 # ============================================
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgres://postgres:postgres@db:5432/rythu_mitra'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'postgres'),
+        'USER': os.getenv('DB_USER', 'postgres.imnuxsdpxwiafpnuhedt'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'aws-1-ap-northeast-1.pooler.supabase.com'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'sslmode': 'require',
+            'connect_timeout': 10,
+        },
+        'CONN_MAX_AGE': 60,
+    }
 }
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
-CELERY_BROKER_URL = f"{REDIS_URL}/0"
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"{REDIS_URL}/1",
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}
+
+if REDIS_URL == "local":
+    CELERY_BROKER_URL = "memory://"
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        }
     }
-}
+else:
+    CELERY_BROKER_URL = f"{REDIS_URL}/0"
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": f"{REDIS_URL}/1",
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}
+        }
+    }
 
 # ============================================
 # CORS (Allow Frontend Access)
@@ -92,6 +142,7 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG # Only allow all in debug
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://localhost:80",
     "https://rythumitra.com",
     "https://www.rythumitra.com",

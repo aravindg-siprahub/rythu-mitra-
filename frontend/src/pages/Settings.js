@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PageShell from "../components/layout/PageShell";
-import TopNav from "../components/dashboard/TopNav";
+import Navbar from "../components/layout/Navbar";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { motion } from "framer-motion";
@@ -25,7 +25,7 @@ export default function Settings() {
 
     return (
         <PageShell>
-            <TopNav />
+            <Navbar />
 
 
             <div className="max-w-[1100px] mx-auto px-4">

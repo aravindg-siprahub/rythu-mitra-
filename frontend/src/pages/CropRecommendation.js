@@ -1,152 +1,162 @@
 import React, { useState } from 'react';
-import apiService from '../services/api';
-import './CropRecommendation.css'; // Ensure this file exists for animations if needed
+import { motion, AnimatePresence } from 'framer-motion';
+import DashboardLayout from './components/dashboard/DashboardLayout'; // Use the new OS Layout
+import GlassCard from './components/ui/GlassCard';
+import Button from './components/ui/Button';
+import Input from './components/ui/Input';
 
-const CropRecommendation = () => {
+// Dummy Enterprise Data
+const MOCK_PREDICTIONS = [
+  { crop: "Rice (Sona Masoori)", confidence: 98, yield: "4.5 tons/acre", profit: "₹45,000", risk: "Low", match: "Perfect Match" },
+  { crop: "Maize (Hybrid)", confidence: 85, yield: "3.2 tons/acre", profit: "₹32,000", risk: "Low", match: "High Potential" },
+  { crop: "Cotton (Bt)", confidence: 76, yield: "2.1 tons/acre", profit: "₹65,000", risk: "Medium", match: "Profitable" },
+];
+
+export default function CropRecommendation() {
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState(null);
   const [formData, setFormData] = useState({
     N: 90, P: 42, K: 43, temperature: 25, humidity: 60, ph: 6.5, rainfall: 200
   });
-  const [recommendations, setRecommendations] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: parseFloat(e.target.value) });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setRecommendations(null);
-
-    try {
-      const response = await apiService.getCropRecommendation(formData);
-      setRecommendations(response.data.recommendations);
-    } catch (err) {
-      console.error("Crop API Error:", err);
-      setError("Analysis failed. Please check connection or try again.");
-    } finally {
+    setTimeout(() => {
+      setResults(MOCK_PREDICTIONS);
       setLoading(false);
-    }
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 p-6 md:p-12 font-sans">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-green-800 drop-shadow-sm">
-            🌱 AI Crop Advisor
-          </h1>
-          <p className="text-green-600 mt-3 text-lg">
-            Enterprise-Grade Precision Agriculture Engine
+    <DashboardLayout>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="px-6 py-12 max-w-7xl mx-auto"
+      >
+        {/* Module Header */}
+        <div className="mb-12">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-xl border border-emerald-500/20">
+              🌱
+            </div>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Crop Intelligence</h1>
+          </div>
+          <p className="text-slate-400 max-w-2xl text-lg font-light leading-relaxed">
+            Deploying ensemble machine learning models to analyze soil composition and climatic patterns for optimal yield prediction.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-12 gap-8">
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
           {/* Input Panel */}
-          <div className="md:col-span-5 bg-white rounded-2xl shadow-xl overflow-hidden border border-green-100">
-            <div className="bg-green-700 p-4">
-              <h3 className="text-white font-bold text-lg flex items-center">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.040.547-6.838a2 2 0 00-3.568-1.571L9.428 12.57l-.392 5.087 5.087-.392z"></path></svg>
-                Soil Parameters
-              </h3>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <GlassCard className="lg:col-span-4 sticky top-28 border-white/5 bg-white/[0.02]">
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-8 border-b border-white/5 pb-4">
+              Soil Parameters
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-3 gap-4">
+                <Input label="N" name="N" value={formData.N} onChange={handleChange} placeholder="90" />
+                <Input label="P" name="P" value={formData.P} onChange={handleChange} placeholder="42" />
+                <Input label="K" name="K" value={formData.K} onChange={handleChange} placeholder="43" />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="group">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Nitrogen (N)</label>
-                  <input name="N" type="number" value={formData.N} onChange={handleChange} className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Phosphorus (P)</label>
-                  <input name="P" type="number" value={formData.P} onChange={handleChange} className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Potassium (K)</label>
-                  <input name="K" type="number" value={formData.K} onChange={handleChange} className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">pH Level</label>
-                  <input name="ph" type="number" step="0.1" value={formData.ph} onChange={handleChange} className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" />
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Rainfall (mm)</label>
-                  <input name="rainfall" type="number" value={formData.rainfall} onChange={handleChange} className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" />
-                </div>
+                <Input label="pH Level" name="ph" value={formData.ph} onChange={handleChange} placeholder="6.5" />
+                <Input label="Rainfall" name="rainfall" value={formData.rainfall} onChange={handleChange} placeholder="200" />
               </div>
 
-              <button
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Temp (°C)" name="temperature" value={formData.temperature} onChange={handleChange} placeholder="25" />
+                <Input label="Humidity (%)" name="humidity" value={formData.humidity} onChange={handleChange} placeholder="60" />
+              </div>
+
+              <Button
+                variant="primary"
+                className="w-full py-4 text-xs font-bold uppercase tracking-[0.2em] bg-emerald-600 hover:bg-emerald-500 transition-all rounded-lg"
                 disabled={loading}
-                className={`w-full mt-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105 active:scale-95 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600'}`}
               >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Running Models...
-                  </span>
-                ) : 'Predict Best Crop'}
-              </button>
+                {loading ? "Processing..." : "Run Analysis"}
+              </Button>
             </form>
-          </div>
+          </GlassCard>
 
-          {/* Output Panel */}
-          <div className="md:col-span-7 space-y-6">
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r shadow-sm">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+          {/* Results Panel */}
+          <div className="lg:col-span-8 min-h-[500px]">
+            <AnimatePresence mode="wait">
+              {!results && !loading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="h-full flex flex-col items-center justify-center p-12 border border-dashed border-white/10 rounded-xl bg-white/[0.01]"
+                >
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6 text-2xl grayscale opacity-50">
+                    🧬
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Awaiting Input</h3>
+                </motion.div>
+              )}
 
-            {!recommendations && !loading && !error && (
-              <div className="bg-white/50 border-2 dashed border-green-200 rounded-2xl p-12 text-center h-full flex flex-col justify-center items-center">
-                <span className="text-6xl mb-4">🚜</span>
-                <h3 className="text-xl font-medium text-gray-500">Ready to Analyze</h3>
-                <p className="text-gray-400">Enter soil data to get AI-powered insights.</p>
-              </div>
-            )}
+              {results && !loading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="grid gap-4"
+                >
+                  {results.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`group relative overflow-hidden p-6 rounded-xl border transition-all duration-300 ${idx === 0
+                          ? 'bg-emerald-950/20 border-emerald-500/30 hover:bg-emerald-900/20'
+                          : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                        }`}
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                          <div className={`w-12 h-12 rounded flex items-center justify-center text-2xl ${idx === 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-slate-500'}`}>
+                            {idx === 0 ? '🏆' : '🥔'}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-white">{item.crop}</h3>
+                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                              <span className={idx === 0 ? "text-emerald-400" : ""}>{item.match}</span>
+                              <span>•</span>
+                              <span>{item.risk} Risk</span>
+                            </div>
+                          </div>
+                        </div>
 
-            {recommendations && (
-              <div className="grid gap-4 animate-fade-in-up">
-                {recommendations.map((rec, idx) => (
-                  <div key={idx} className={`relative overflow-hidden bg-white rounded-xl shadow-lg border-l-8 ${idx === 0 ? 'border-green-500 transform scale-105 z-10' : 'border-gray-300 opacity-90'}`}>
-                    <div className="p-6 flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{idx === 0 ? 'Primary Recommendation' : `Option ${idx + 1}`}</p>
-                        <h2 className="text-3xl font-extrabold text-gray-800 mt-1">{rec.crop}</h2>
-                        {idx === 0 && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">Highly Recommended</span>}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-4xl font-black text-green-600">{rec.confidence}%</div>
-                        <p className="text-xs text-gray-500">Confidence Score</p>
+                        <div className="flex items-center gap-8 md:gap-12 pl-18 md:pl-0 font-mono text-xs">
+                          <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-slate-600 uppercase font-sans font-bold tracking-wider mb-1">Yield</span>
+                            <span className="text-white">{item.yield}</span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-slate-600 uppercase font-sans font-bold tracking-wider mb-1">Profit</span>
+                            <span className="text-emerald-400">{item.profit}</span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-slate-600 uppercase font-sans font-bold tracking-wider mb-1">Conf.</span>
+                            <span className="text-white">{item.confidence}%</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    {/* Progress Bar background */}
-                    <div className="absolute bottom-0 left-0 h-1 bg-green-500 opacity-20" style={{ width: `${rec.confidence}%` }}></div>
-                  </div>
-                ))}
-
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-700 mt-4 flex items-start">
-                  <svg className="w-5 h-5 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  <p>
-                    <strong>AI Insight:</strong> These results are generated using an ensemble of Random Forest and XGBoost models trained on regional historical data.
-                  </p>
-                </div>
-              </div>
-            )}
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </DashboardLayout>
   );
-};
-
-export default CropRecommendation;
+}

@@ -1,0 +1,5 @@
+{
+  "name": "create-react-component",
+  "description": "Generate a production-ready React component with props, UI states, TailwindCSS, and clean structure.",
+  "prompt": "Generate a new React component following Arvi's frontend rules:\n\n- Functional component\n- Props interface\n- Clean folder structure\n- Use TailwindCSS for styling\n- Add loading, empty, and error states\n- Export default\n- Include JSDoc comments\n- Optimize rendering\n- Use hooks for state management\n\nComponent Name: {{input}}\n\nWrite ONLY the full component code. No explanation."
+}

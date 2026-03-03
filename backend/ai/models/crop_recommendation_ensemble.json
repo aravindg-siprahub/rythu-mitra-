@@ -1,0 +1,48 @@
+{
+  "model_name": "crop_recommendation_ensemble",
+  "version": "v20260228_084544",
+  "training_timestamp": "2026-02-28T08:45:44.274846+00:00",
+  "status": "production",
+  "feature_list": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall",
+    "np_ratio",
+    "nk_ratio",
+    "pk_ratio"
+  ],
+  "class_names": [
+    "apple",
+    "banana",
+    "blackgram",
+    "chickpea",
+    "coconut",
+    "coffee",
+    "cotton",
+    "grapes",
+    "jute",
+    "kidneybeans",
+    "lentil",
+    "maize",
+    "mango",
+    "mothbeans",
+    "mungbean",
+    "muskmelon",
+    "orange",
+    "papaya",
+    "pigeonpeas",
+    "pomegranate",
+    "rice",
+    "watermelon"
+  ],
+  "evaluation_metrics": {
+    "rf_accuracy": 0.9932,
+    "macro_f1": 0.9932
+  },
+  "feature_importances": {},
+  "shap_top_features": []
+}

@@ -2,9 +2,11 @@ import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Button from "../ui/Button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function UltraHero() {
     const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
     const ref = useRef(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
@@ -21,7 +23,7 @@ export default function UltraHero() {
                 className="absolute inset-0 z-0"
             >
                 {/* Dynamic Surface Grid */}
-                <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+                <div className="absolute inset-0 opacity-[0.05] bg-[size:40px_40px] md:bg-[size:80px_80px]" style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)` }} />
 
                 {/* Atmospheric Glows */}
                 <div className="absolute top-1/4 left-1/4 h-[800px] w-[800px] rounded-full bg-blue-600/10 blur-[180px] animate-pulse" />
@@ -58,7 +60,7 @@ export default function UltraHero() {
                     </motion.div>
 
                     {/* The Terminal Headline */}
-                    <h1 className="text-[10vw] lg:text-[8vw] font-black tracking-tighter leading-[0.85] mb-16 font-title italic">
+                    <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-16 font-title italic">
                         <motion.span
                             initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
                             animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1 }}
@@ -95,10 +97,10 @@ export default function UltraHero() {
                         className="flex flex-col sm:flex-row items-center justify-center gap-10"
                     >
                         <button
-                            onClick={() => navigate("/dashboard")}
+                            onClick={() => navigate(isLoggedIn ? "/dashboard" : "/register")}
                             className="group relative h-20 px-16 rounded-[2rem] bg-white text-black font-black text-xs uppercase tracking-[0.3em] overflow-hidden transition-all btn-tactile hover:shadow-[0_0_50px_rgba(255,255,255,0.2)]"
                         >
-                            <span className="relative z-10">Launch Intelligence Console</span>
+                            <span className="relative z-10">{isLoggedIn ? "Open Dashboard" : "Get Started Free"}</span>
                             <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1]" />
                         </button>
 

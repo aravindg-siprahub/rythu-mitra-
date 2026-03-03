@@ -1,0 +1,12 @@
+[
+  "month",
+  "season_encoded",
+  "temp_lag_1",
+  "temp_lag_7",
+  "growing_degree_days",
+  "rainfall_lag_7",
+  "rolling_rainfall_7d",
+  "rolling_rainfall_30d",
+  "heat_index",
+  "humidity"
+]
