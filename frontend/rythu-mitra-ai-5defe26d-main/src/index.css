@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 120 10% 98%;
+    --foreground: 220 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 10%;
+    --primary: 142 72% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 120 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 20% 88%;
+    --input: 142 20% 88%;
+    --ring: 142 72% 37%;
+    --radius: 0.75rem;
+    --sky: 199 89% 48%;
+
+    --green-primary: 142 72% 37%;
+    --green-secondary: 142 71% 45%;
+    --green-light: 138 76% 97%;
+    --green-dark: 144 61% 20%;
+    --gold: 38 92% 50%;
+    --footer-bg: 140 33% 6%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+  .font-mono-stat {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--green-secondary)), hsl(var(--gold)));
+  }
+  .text-gradient-white {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 85%));
+  }
+  .bg-green-gradient {
+    background: linear-gradient(135deg, hsl(var(--green-primary)), hsl(var(--green-dark)));
+  }
+  .bg-green-gradient-light {
+    background: linear-gradient(135deg, hsl(var(--green-primary)), hsl(var(--green-secondary)));
+  }
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(38 92% 60%));
+  }
+  .glass {
+    @apply backdrop-blur-md;
+    background: hsla(0, 0%, 100%, 0.8);
+  }
+  .glass-dark {
+    @apply backdrop-blur-md;
+    background: hsla(0, 0%, 0%, 0.3);
+  }
+  .shadow-green {
+    box-shadow: 0 4px 40px hsla(142, 72%, 37%, 0.12);
+  }
+  .shadow-green-lg {
+    box-shadow: 0 8px 60px hsla(142, 72%, 37%, 0.2);
+  }
+  .card-rythu {
+    @apply rounded-[20px] shadow-green;
+  }
+  .btn-rythu {
+    @apply rounded-xl font-semibold transition-all duration-300;
+  }
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(0,0%,100%,0.25), transparent);
+    transition: left 0.5s;
+  }
+  .shimmer:hover::after {
+    left: 100%;
+  }
+  .section-fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+  .section-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+  50% { transform: translateY(-20px) scale(1.1); opacity: 0.6; }
+}
+@keyframes shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee-fast {
+  animation: marquee 20s linear infinite;
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

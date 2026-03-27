@@ -1,0 +1,144 @@
+/* ============================================================
+     WeatherOrb.css
+     VisionOS Hyper-Local Weather Orb (Glass + Glow + 3D)
+============================================================== */
+
+.weather-orb-card {
+  width: 100%;
+  height: 100%;
+
+  position: relative;
+
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  backdrop-filter: blur(25px) saturate(200%);
+
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform-style: preserve-3d;
+
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.25);
+
+  transition: 0.35s ease;
+}
+
+/* Dark mode version */
+.dark .weather-orb-card {
+  background: rgba(20, 20, 20, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+/* ============================================================
+    GLOW AURA BACKGROUND
+============================================================== */
+.orb-glow {
+  position: absolute;
+  width: 180%;
+  height: 180%;
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(25, 195, 125, 0.45),
+    rgba(25, 195, 125, 0.15),
+    transparent
+  );
+
+  filter: blur(45px);
+  opacity: 0.7;
+
+  pointer-events: none;
+  z-index: -1;
+
+  animation: orbPulse 6s infinite ease-in-out;
+}
+
+@keyframes orbPulse {
+  0% { transform: scale(0.96); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(0.96); opacity: 0.6; }
+}
+
+/* ============================================================
+    WEATHER CONTENT
+============================================================== */
+
+.weather-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  transform: translateZ(40px);
+}
+
+/* cloud icon */
+.weather-cloud-icon {
+  height: 44px;
+  width: 44px;
+  color: white;
+  opacity: 0.9;
+
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.35));
+}
+
+/* Big temperature */
+.weather-temp {
+  font-size: 2rem;
+  color: #ffffff;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+  text-shadow: 0 0 15px rgba(255,255,255,0.55);
+}
+
+/* vision-style micro-text */
+.weather-alert {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.6px;
+
+  text-align: center;
+  width: 90%;
+}
+
+.dark .weather-alert {
+  color: rgba(230,230,230,0.85);
+}
+
+
+/* ============================================================
+    PARALLAX HOVER EFFECT (Vision Magnetic)
+============================================================== */
+
+.weather-orb-card:hover {
+  transform: scale(1.06) translateY(-3px);
+  box-shadow: 0 28px 54px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ============================================================
+    RESPONSIVE RULES
+============================================================== */
+
+@media (max-width: 700px) {
+  .weather-temp {
+    font-size: 1.7rem;
+  }
+
+  .weather-cloud-icon {
+    height: 36px;
+    width: 36px;
+  }
+}
+
+@media (max-width: 450px) {
+  .weather-temp {
+    font-size: 1.5rem;
+  }
+}

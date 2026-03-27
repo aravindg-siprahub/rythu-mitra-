@@ -1,0 +1,269 @@
+/* ============================================================
+   Apple Maps + Tesla Fleet Dashboard (Transport Page)
+============================================================ */
+
+:root {
+  --bg: #f5f5f7;
+  --dark-bg: #0b0b0c;
+  --text: #1b1b1d;
+  --text-light: #ffffff;
+
+  --green: #19c37d;
+  --accent: #14d487;
+
+  --glass: rgba(255, 255, 255, 0.45);
+  --glass-dark: rgba(12, 12, 12, 0.45);
+
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --shadow: 0 26px 45px rgba(0, 0, 0, 0.18);
+}
+
+.dark {
+  --bg: var(--dark-bg);
+  --text: var(--text-light);
+}
+
+/* WRAPPER */
+.tp-wrapper {
+  padding: 40px 70px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "SF Pro Display", Inter, sans-serif;
+}
+
+/* BACK BUTTON */
+.tp-back {
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  margin-bottom: 10px;
+  transition: 0.2s;
+}
+.tp-back:hover {
+  opacity: 1;
+  transform: translateX(-5px);
+}
+
+/* HERO */
+.tp-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.tp-title {
+  font-size: 3.4rem;
+  font-weight: 800;
+}
+
+.tp-sub {
+  opacity: 0.7;
+  font-size: 1.3rem;
+}
+
+.tp-map-hero {
+  width: 100%;
+  margin-top: 40px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+  object-fit: cover;
+}
+
+/* SEARCH */
+.tp-search {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.tp-search input {
+  width: 60%;
+  padding: 14px 20px;
+  border: none;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  font-size: 1.15rem;
+}
+
+.tp-voice {
+  padding: 12px;
+  border: none;
+  background: var(--green);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.3rem;
+  transition: 0.2s;
+}
+.tp-voice:hover {
+  transform: scale(1.1);
+}
+
+/* FILTER TABS */
+.tp-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 40px;
+}
+
+.tp-tabs button {
+  padding: 10px 24px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: #e6e6e6;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+.tp-tabs .active {
+  background: var(--green);
+  color: white;
+  transform: translateY(-4px);
+}
+
+/* VEHICLE GRID */
+.tp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 35px;
+}
+
+.tp-card {
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.dark .tp-card {
+  background: var(--glass-dark);
+}
+
+.tp-card:hover {
+  transform: scale(1.04);
+}
+
+/* IMAGE */
+.tp-img {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+}
+
+/* CARD BODY */
+.tp-body {
+  margin-top: 15px;
+}
+
+.tp-body h3 {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.tp-type {
+  opacity: 0.75;
+}
+
+/* INFO */
+.tp-capacity,
+.tp-price,
+.tp-rating {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+/* STATUS */
+.status {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+.green {
+  color: var(--green);
+}
+
+.red {
+  color: #e63946;
+}
+
+/* BOOK BUTTON */
+.tp-book-btn {
+  margin-top: 18px;
+  padding: 12px;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: var(--green);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.tp-book-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* MODAL */
+.tp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tp-modal {
+  padding: 30px;
+  background: white;
+  border-radius: var(--radius-xl);
+  width: 420px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.tp-modal-img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  height: 230px;
+  object-fit: cover;
+}
+
+.tp-confirm-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: var(--green);
+  color: white;
+  font-weight: 700;
+}
+
+.tp-close-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #e6e6e6;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+
+/* FOOTER */
+.tp-footer {
+  margin-top: 60px;
+  text-align: center;
+  opacity: 0.7;
+  padding-bottom: 40px;
+}

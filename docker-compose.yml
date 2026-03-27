@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    networks: [app-network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [app-network]
+
+  celery:
+    build: ./backend
+    restart: always
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [app-network]
+
+  celery-beat:
+    build: ./backend
+    restart: always
+    command: celery -A app.celery_app beat --loglevel=info
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [app-network]
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://13.48.149.125:8000
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks: [app-network]
+
+networks:
+  app-network:
+    driver: bridge

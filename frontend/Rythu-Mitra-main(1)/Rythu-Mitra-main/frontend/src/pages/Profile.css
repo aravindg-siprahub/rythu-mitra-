@@ -1,0 +1,165 @@
+/* ======================================================
+   Rythu Mitra - Profile Page (Apple ID + Vision Pro UI)
+====================================================== */
+
+:root {
+  --bg: #f5f5f7;
+  --dark-bg: #0c0c0d;
+
+  --text: #1b1b1d;
+  --text-light: #ffffff;
+
+  --green: #19c37d;
+
+  --glass-light: rgba(255, 255, 255, 0.55);
+  --glass-dark: rgba(20, 20, 20, 0.55);
+
+  --radius-xl: 26px;
+  --radius-lg: 18px;
+  --shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.dark {
+  --bg: var(--dark-bg);
+  --text: var(--text-light);
+  --glass-light: var(--glass-dark);
+}
+
+/* WRAPPER */
+.pf-wrapper {
+  padding: 40px 70px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "SF Pro Display", Inter, sans-serif;
+}
+
+/* BACK BUTTON */
+.pf-back {
+  cursor: pointer;
+  font-size: 1.2rem;
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+.pf-back:hover {
+  opacity: 1;
+}
+
+/* HERO */
+.pf-hero {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.pf-avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+}
+
+.pf-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-top: 20px;
+}
+
+.pf-sub {
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+/* PROFILE CARD */
+.pf-card {
+  background: var(--glass-light);
+  backdrop-filter: blur(20px) saturate(180%);
+  padding: 35px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 40px;
+  box-shadow: var(--shadow);
+}
+
+.pf-card h2 {
+  margin-bottom: 18px;
+  font-size: 1.6rem;
+}
+
+.pf-card label {
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
+
+.pf-card input {
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: none;
+  font-size: 1.05rem;
+  background: white;
+}
+
+.dark .pf-card input {
+  background: #111;
+  color: white;
+}
+
+/* SAVE BUTTON */
+.pf-save-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--green);
+  border-radius: var(--radius-lg);
+  color: white;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.pf-save-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* SECURITY */
+.pf-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.pf-enable-btn,
+.pf-change-btn {
+  padding: 10px 15px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: #d2d2d2;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.pf-enable-btn:hover,
+.pf-change-btn:hover {
+  background: #bdbdbd;
+}
+
+/* DEVICES */
+.pf-device {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pf-device img {
+  width: 65px;
+  opacity: 0.8;
+}
+
+/* FOOTER */
+.pf-footer {
+  text-align: center;
+  opacity: 0.7;
+  margin-top: 40px;
+  padding-bottom: 30px;
+}

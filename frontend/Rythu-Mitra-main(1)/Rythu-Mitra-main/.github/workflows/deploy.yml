@@ -1,0 +1,91 @@
+name: Deploy Rythu Mitra Enterprise OS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  ECR_REGISTRY: rythu-mitra-registry
+  AWS_REGION: us-east-1
+
+jobs:
+  test-and-build:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install flake8 pytest
+
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 backend --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Run Tests
+      # Mocking db for CI test run
+      run: |
+        cd backend
+        python manage.py test ai --settings=project.settings
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub (or ECR)
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Backend
+      if: github.event_name != 'pull_request'
+      uses: docker/build-push-action@v4
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile.backend
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/rythu-mitra-backend:latest
+
+    - name: Build and Push Frontend
+      if: github.event_name != 'pull_request'
+      uses: docker/build-push-action@v4
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile.frontend
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/rythu-mitra-frontend:latest
+
+  deploy:
+    name: Deploy to EC2
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd ~/rythu-mitra
+          git pull origin main
+          docker-compose down
+          docker-compose pull
+          # Re-train/Bootstrap models if needed (idempotent check inside script)
+          python3 backend/ai/train_models.py
+          docker-compose up -d
+          docker system prune -f

@@ -1,0 +1,19 @@
+[tool.pyre]
+source_directories = ["backend", "backend/app", "backend/scripts"]
+search_path = [
+    "backend/.venv/Lib/site-packages",
+    "backend/.venv/lib/site-packages"
+]
+exclude = [
+    "backend/.venv/.*"
+]
+
+[tool.pyright]
+venvPath = "backend"
+venv = ".venv"
+extraPaths = [
+    "backend",
+    "backend/app",
+    "backend/.venv/Lib/site-packages"
+]
+include = ["backend/app"]

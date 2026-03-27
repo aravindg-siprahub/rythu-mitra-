@@ -1,0 +1,179 @@
+/* ============================================================
+   DiseaseScanner.css
+   VisionOS Diagnostic Scanner Card / 3D Holographic Panel
+============================================================ */
+
+.disease-scanner-card {
+  width: 100%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(25px) saturate(180%);
+
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  overflow: hidden;
+  position: relative;
+
+  transform-style: preserve-3d;
+
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  transition: 0.3s ease;
+}
+
+.dark .disease-scanner-card {
+  background: rgba(20, 20, 20, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+
+/* ============================================================
+   SCAN GRID BACKGROUND
+============================================================ */
+
+.scan-grid {
+  position: absolute;
+  inset: 0;
+
+  background-image: linear-gradient(
+      rgba(255,255,255,0.12) 1px,
+      transparent 1px
+    ), 
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.12) 1px,
+      transparent 1px
+    );
+
+  background-size: 38px 38px;
+  opacity: 0.25;
+
+  pointer-events: none;
+  transform: translateZ(-20px);
+}
+
+
+/* ============================================================
+   SCAN LINE (MOVING)
+============================================================ */
+
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 3px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #19c37d,
+    #19c37d,
+    transparent
+  );
+
+  box-shadow: 0 0 22px #19c37d;
+  opacity: 0.9;
+
+  animation: scanMove 2.5s linear infinite;
+}
+
+@keyframes scanMove {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+
+/* ============================================================
+   ICON OVERLAY
+============================================================ */
+
+.scanner-icon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  height: 34px;
+  width: 34px;
+
+  color: #19c37d;
+
+  opacity: 0.9;
+  filter: drop-shadow(0 0 8px rgba(25,195,125,0.7));
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   TITLE + DESCRIPTION (BOTTOM AREA)
+============================================================ */
+
+.scanner-info {
+  position: relative;
+  z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  transform: translateZ(20px);
+}
+
+.scanner-info h3 {
+  color: white;
+  font-size: 1.28rem;
+  font-weight: 600;
+
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
+}
+
+.dark .scanner-info h3 {
+  color: #f1f1f1;
+}
+
+.scanner-info p {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.dark .scanner-info p {
+  color: rgba(230,230,230,0.9);
+}
+
+
+/* ============================================================
+   HOVER / ACTIVE EFFECT (VisionOS Magnetic Lift)
+============================================================ */
+
+.disease-scanner-card:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 25px 48px rgba(0, 0, 0, 0.30);
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 600px) {
+  .scanner-icon {
+    height: 28px;
+    width: 28px;
+  }
+
+  .scanner-info h3 {
+    font-size: 1.1rem;
+  }
+}

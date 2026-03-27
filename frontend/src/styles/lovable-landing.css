@@ -1,0 +1,175 @@
+/* Scoped theme + utilities from Lovable template */
+
+  .lovable-landing {
+    --background: 120 10% 98%;
+    --foreground: 220 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 10%;
+    --primary: 142 72% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 120 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 20% 88%;
+    --input: 142 20% 88%;
+    --ring: 142 72% 37%;
+    --radius: 0.75rem;
+    --sky: 199 89% 48%;
+    --green-primary: 142 72% 37%;
+    --green-secondary: 142 71% 45%;
+    --green-light: 138 76% 97%;
+    --green-dark: 144 61% 20%;
+    --gold: 38 92% 50%;
+    --footer-bg: 140 33% 6%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Inter", sans-serif;
+  }
+
+  .lovable-landing h1,
+  .lovable-landing h2,
+  .lovable-landing h3 {
+    font-family: "Playfair Display", serif;
+  }
+
+  .lovable-landing * {
+    border-color: hsl(var(--border));
+  }
+
+  .lovable-landing .font-display {
+    font-family: "Playfair Display", serif;
+  }
+  .lovable-landing .font-body {
+    font-family: "Inter", sans-serif;
+  }
+  .lovable-landing .font-mono-stat {
+    font-family: "JetBrains Mono", monospace;
+  }
+  .lovable-landing .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, hsl(var(--green-secondary)), hsl(var(--gold)));
+  }
+  .lovable-landing .text-gradient-white {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 85%));
+  }
+  .lovable-landing .bg-green-gradient {
+    background: linear-gradient(135deg, hsl(var(--green-primary)), hsl(var(--green-dark)));
+  }
+  .lovable-landing .bg-green-gradient-light {
+    background: linear-gradient(135deg, hsl(var(--green-primary)), hsl(var(--green-secondary)));
+  }
+  .lovable-landing .bg-gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(38 92% 60%));
+  }
+  .lovable-landing .glass {
+    backdrop-filter: blur(12px);
+    background: hsla(0, 0%, 100%, 0.8);
+  }
+  .lovable-landing .glass-dark {
+    backdrop-filter: blur(12px);
+    background: hsla(0, 0%, 0%, 0.3);
+  }
+  .lovable-landing .shadow-green {
+    box-shadow: 0 4px 40px hsla(142, 72%, 37%, 0.12);
+  }
+  .lovable-landing .shadow-green-lg {
+    box-shadow: 0 8px 60px hsla(142, 72%, 37%, 0.2);
+  }
+  .lovable-landing .card-rythu {
+    border-radius: 20px;
+    box-shadow: 0 4px 40px hsla(142, 72%, 37%, 0.12);
+  }
+  .lovable-landing .btn-rythu {
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  .lovable-landing .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .lovable-landing .shimmer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(0, 0%, 100%, 0.25), transparent);
+    transition: left 0.5s;
+  }
+  .lovable-landing .shimmer:hover::after {
+    left: 100%;
+  }
+  .lovable-landing .section-fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+  .lovable-landing .section-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+@keyframes lovable-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+@keyframes lovable-bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+@keyframes lovable-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+.lovable-landing .animate-marquee {
+  animation: lovable-marquee 30s linear infinite;
+}
+.lovable-landing .animate-marquee-fast {
+  animation: lovable-marquee 20s linear infinite;
+}
+.lovable-landing .animate-bounce-slow {
+  animation: lovable-bounce-slow 2s ease-in-out infinite;
+}
+.lovable-landing .animate-float {
+  animation: lovable-float 6s ease-in-out infinite;
+}

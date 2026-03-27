@@ -1,0 +1,267 @@
+/* ===================================================================
+   NAVBAR.CSS — VISION PRO SPATIAL GLASS NAVIGATION (30× ULTRA EDITION)
+   Rythu Mitra AGI OS — Global Navigation System
+=================================================================== */
+
+/* -----------------------------------------------------------
+   ROOT VARIABLES (VISIONOS PALETTE)
+----------------------------------------------------------- */
+:root {
+  --nav-glass-light: rgba(255, 255, 255, 0.55);
+  --nav-glass-dark: rgba(10, 10, 10, 0.55);
+
+  --nav-text-light: #0e0e0e;
+  --nav-text-dark: #f7f7f7;
+
+  --nav-border-light: rgba(255, 255, 255, 0.35);
+  --nav-border-dark: rgba(255, 255, 255, 0.15);
+
+  --accent-color: #19c37d;
+}
+
+/* DARK MODE INTEGRATION */
+.dark {
+  --nav-glass-light: var(--nav-glass-dark);
+  --nav-text-light: var(--nav-text-dark);
+}
+
+/* -----------------------------------------------------------
+   NAVBAR MAIN WRAPPER
+----------------------------------------------------------- */
+.vp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5000;
+  width: 100%;
+
+  padding: 20px 65px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  background: var(--nav-glass-light);
+  border-bottom: 1px solid var(--nav-border-light);
+
+  transition: all 0.35s ease;
+}
+
+/* DARK MODE NAV */
+.dark .vp-nav {
+  background: var(--nav-glass-dark);
+  border-bottom: 1px solid var(--nav-border-dark);
+}
+
+/* -----------------------------------------------------------
+   SCROLL SHRINK EFFECT (APPLE.COM STYLE)
+----------------------------------------------------------- */
+.vp-nav.nav-shrink {
+  padding: 10px 60px;
+  backdrop-filter: blur(35px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.18);
+}
+
+.vp-nav.nav-shrink .vp-logo {
+  transform: scale(0.85);
+  opacity: 0.85;
+}
+
+/* -----------------------------------------------------------
+   LOGO
+----------------------------------------------------------- */
+.vp-logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.vp-logo:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* -----------------------------------------------------------
+   DESKTOP NAV LINKS
+----------------------------------------------------------- */
+.vp-links {
+  display: flex;
+  gap: 38px;
+  list-style: none;
+  align-items: center;
+}
+
+.vp-link {
+  color: var(--nav-text-light);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+
+  padding: 4px 2px;
+  position: relative;
+  transition: 0.25s ease;
+}
+
+/* DARK MODE */
+.dark .vp-link {
+  color: var(--nav-text-dark);
+}
+
+/* Hover */
+.vp-link:hover {
+  color: var(--accent-color);
+  transform: translateY(-3px);
+}
+
+/* Active route underline */
+.vp-link.active {
+  color: var(--accent-color);
+}
+
+.vp-link.active::after {
+  content: "";
+  position: absolute;
+  width: 32px;
+  height: 3px;
+  background: var(--accent-color);
+
+  border-radius: 5px;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: navPop 0.35s ease;
+}
+
+@keyframes navPop {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* -----------------------------------------------------------
+   DARK MODE TOGGLE
+----------------------------------------------------------- */
+.vp-dark-toggle {
+  background: transparent;
+  border: none;
+
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: var(--nav-text-light);
+  transition: 0.25s ease;
+}
+
+.dark .vp-dark-toggle {
+  color: var(--nav-text-dark);
+}
+
+.vp-dark-toggle:hover {
+  transform: scale(1.2) rotate(5deg);
+}
+
+/* -----------------------------------------------------------
+   MOBILE MENU BUTTON
+----------------------------------------------------------- */
+.vp-menu-btn {
+  font-size: 1.95rem;
+  display: none;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.vp-menu-btn:hover {
+  transform: scale(1.15);
+}
+
+/* -----------------------------------------------------------
+   MOBILE MENU PANEL (VisionOS floating)
+----------------------------------------------------------- */
+.vp-mobile-menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 78%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 100px 30px;
+
+  backdrop-filter: blur(35px) saturate(180%);
+  -webkit-backdrop-filter: blur(35px) saturate(180%);
+  background: var(--nav-glass-light);
+  border-left: 1px solid var(--nav-border-light);
+
+  box-shadow: -10px 0px 40px rgba(0,0,0,0.25);
+
+  transition: right 0.4s ease;
+  z-index: 6000;
+}
+
+.dark .vp-mobile-menu {
+  background: var(--nav-glass-dark);
+  border-left: 1px solid var(--nav-border-dark);
+}
+
+.vp-mobile-menu.open {
+  right: 0;
+}
+
+/* Mobile menu links */
+.vp-mobile-menu a {
+  font-size: 1.25rem;
+  text-decoration: none;
+  color: var(--nav-text-light);
+  font-weight: 600;
+  transition: 0.25s ease;
+}
+
+.dark .vp-mobile-menu a {
+  color: var(--nav-text-dark);
+}
+
+.vp-mobile-menu a:hover {
+  color: var(--accent-color);
+  transform: translateX(6px);
+}
+
+/* Mobile dark mode toggle */
+.vp-dark-toggle-mobile {
+  margin-top: 30px;
+  font-size: 1.1rem;
+  background: var(--accent-color);
+  color: white;
+
+  padding: 12px 20px;
+  border-radius: 14px;
+}
+
+/* -----------------------------------------------------------
+   RESPONSIVE BREAKPOINTS
+----------------------------------------------------------- */
+@media (max-width: 900px) {
+  .vp-links {
+    display: none;
+  }
+
+  .vp-menu-btn {
+    display: block;
+  }
+
+  .vp-dark-toggle {
+    margin-right: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vp-nav {
+    padding: 16px 22px;
+  }
+
+  .vp-logo {
+    font-size: 1.35rem;
+  }
+}

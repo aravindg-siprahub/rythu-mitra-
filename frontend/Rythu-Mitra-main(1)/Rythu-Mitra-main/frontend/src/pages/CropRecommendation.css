@@ -1,0 +1,392 @@
+/* ========================================================================== */
+/*                   🌾 ULTRA PREMIUM AI CROP CSS (PART B)                   */
+/*            Futuristic + Glassmorphism + Sci-Fi Neon System                */
+/* ========================================================================== */
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  overflow-x: hidden;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #eef2f1;
+}
+
+/* ========================================================================== */
+/* MAIN CONTAINER */
+/* ========================================================================== */
+
+.ultra-container {
+  min-height: 100vh;
+  padding-left: 260px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.4s ease;
+}
+
+/* Background image */
+.image-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.55);
+  z-index: -10;
+}
+
+/* Background video */
+.video-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+  z-index: -10;
+  opacity: 0.85;
+  filter: brightness(0.65) contrast(1.2);
+  transition: 0.4s ease;
+}
+
+/* ========================================================================== */
+/* HERO SECTION */
+/* ========================================================================== */
+
+.ultra-hero {
+  padding: 80px 50px 30px;
+  color: white;
+}
+
+.ultra-hero h1 {
+  font-size: 58px;
+  font-weight: 900;
+  text-shadow: 0 25px 40px rgba(0,0,0,0.6);
+  filter: drop-shadow(0 10px 25px rgba(0,0,0,0.4));
+  animation: fadeUp 0.8s ease forwards;
+}
+
+.ultra-hero p {
+  font-size: 20px;
+  max-width: 580px;
+  opacity: 0.95;
+  margin-top: 12px;
+  animation: fadeUp 1s ease forwards;
+}
+
+@keyframes fadeUp {
+  0% {opacity: 0; transform: translateY(20px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
+
+/* ========================================================================== */
+/* BACKGROUND SWITCHER */
+/* ========================================================================== */
+
+.background-switch-container {
+  display: flex;
+  gap: 15px;
+  padding: 20px 50px;
+  flex-wrap: wrap;
+}
+
+.switch-btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.switch-btn:hover {
+  background: rgba(255,255,255,0.4);
+  transform: translateY(-3px);
+}
+
+.switch-btn.active {
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  box-shadow: 0 12px 35px rgba(34, 197, 94, 0.4);
+}
+
+/* ========================================================================== */
+/* FORM CARD */
+/* ========================================================================== */
+
+.ultra-form-card {
+  width: 90%;
+  max-width: 1050px;
+  margin: 20px auto;
+  padding: 40px;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 45px 80px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.45);
+}
+
+.ultra-form-card h2 {
+  font-size: 30px;
+  color: #064e3b;
+  font-weight: 800;
+  margin-bottom: 28px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.form-grid select {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #e5e7eb;
+  font-size: 15px;
+}
+
+.ultra-ai-btn {
+  margin-top: 25px;
+  padding: 16px 40px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  box-shadow: 0 25px 50px rgba(34,197,94,0.35);
+  transition: 0.3s ease;
+}
+
+.ultra-ai-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* ========================================================================== */
+/* CROP CARD */
+/* ========================================================================== */
+
+.prediction-grid {
+  padding: 20px 50px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 35px;
+}
+
+.ultra-crop-card {
+  height: 350px;
+  border-radius: 26px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 35px 70px rgba(0,0,0,0.35);
+}
+
+.ultra-crop-card:hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 55px 100px rgba(0,0,0,0.45);
+}
+
+.ultra-crop-card:hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  border: 3px solid rgba(0,255,140,0.7);
+  box-shadow:
+    0 0 25px rgba(0,255,140,0.7),
+    0 0 60px rgba(0,255,140,0.6);
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 22px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(
+    rgba(0,0,0,0.15),
+    rgba(0,0,0,0.85)
+  );
+}
+
+.card-overlay h3 {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.card-overlay p {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.card-overlay span {
+  font-size: 13px;
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+/* ========================================================================== */
+/* NO RESULTS */
+/* ========================================================================== */
+
+.no-results {
+  padding: 20px 50px;
+  font-size: 20px;
+  color: white;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  font-weight: 600;
+}
+
+/* ========================================================================== */
+/* INSIGHTS PANEL */
+/* ========================================================================== */
+
+.insight-panel {
+  width: 90%;
+  background: rgba(255,255,255,0.75);
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 26px;
+  box-shadow: 0 35px 80px rgba(0,0,0,0.25);
+  backdrop-filter: blur(25px);
+}
+
+.insight-title {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: #064e3b;
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.insight-card {
+  padding: 20px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.insight-card h3 {
+  font-size: 18px;
+  color: #047857;
+  font-weight: 700;
+}
+
+.insight-card p {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* ========================================================================== */
+/* STATS PANEL */
+/* ========================================================================== */
+
+.stats-panel {
+  width: 90%;
+  background: rgba(255,255,255,0.78);
+  padding: 35px;
+  margin: 40px auto;
+  border-radius: 26px;
+  box-shadow: 0 45px 90px rgba(0,0,0,0.28);
+}
+
+.stats-panel h2 {
+  font-size: 30px;
+  font-weight: 900;
+  color: #064e3b;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.85);
+  padding: 22px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+
+.stat-card h3 {
+  font-size: 18px;
+  color: #047857;
+  font-weight: 700;
+}
+
+.stat-card p {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 10px;
+  color: #0f172a;
+}
+
+/* ========================================================================== */
+/* FOOTER */
+/* ========================================================================== */
+
+.ai-footer {
+  text-align: center;
+  padding: 35px;
+  font-size: 15px;
+  color: white;
+  text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  margin-top: 40px;
+}
+
+/* ========================================================================== */
+/* RESPONSIVE */
+/* ========================================================================== */
+
+@media (max-width: 900px) {
+  .ultra-container {
+    padding-left: 20px;
+  }
+
+  .ultra-hero h1 {
+    font-size: 38px;
+  }
+
+  .ultra-form-card {
+    padding: 25px;
+  }
+}
+
+@media (max-width: 600px) {
+  .switch-btn {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .ultra-crop-card {
+    height: 300px;
+  }
+}

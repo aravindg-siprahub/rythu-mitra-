@@ -1,0 +1,240 @@
+/* =====================================================
+   AGI MODE — GOOGLE MATERIAL YOU SIDEBAR (ULTRA PREMIUM)
+===================================================== */
+
+/* ----------- Sidebar Container ----------- */
+.rm-sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  z-index: 1100;
+
+  /* FIXED BACKGROUND FLICKER */
+  background:
+    linear-gradient(145deg, rgba(0,0,0,0.90), rgba(0,0,0,0.97)),
+    url("https://images.unsplash.com/photo-1500937386664-56d1dfef3854");
+
+  background-size: cover;
+  background-position: center;
+
+  /* ❌ REMOVED overlay blend mode (cause of blinking)
+     background-blend-mode: overlay; */
+
+  display: flex;
+  flex-direction: column;
+  padding: 26px 20px 30px;
+
+  border-right: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 0 45px rgba(0,0,0,0.55);
+
+  /* FIXED BLUR FLICKERING */
+  backdrop-filter: blur(8px) saturate(160%);
+  -webkit-backdrop-filter: blur(8px) saturate(160%);
+
+  overflow-y: auto;
+
+  /* FIXED FLICKER — do NOT animate "all" */
+  transition: width 0.35s ease, padding 0.35s ease;
+}
+
+/* ----------- Smooth Collapse Animation ----------- */
+.rm-sidebar.collapsed {
+  width: 80px;
+  padding: 26px 14px;
+}
+
+.rm-sidebar.collapsed .rm-text,
+.rm-sidebar.collapsed h2,
+.rm-sidebar.collapsed .rm-sidebar-status,
+.rm-sidebar.collapsed .rm-sidebar-footer {
+  display: none !important;
+}
+
+/* ----------- Scrollbar (Premium Thin) ----------- */
+.rm-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.rm-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18);
+  border-radius: 10px;
+}
+
+/* =====================================================
+   LOGO
+===================================================== */
+.rm-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 35px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.rm-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+
+  border: 2px solid rgba(255,255,255,0.38);
+  box-shadow: 0 0 14px rgba(255,255,255,0.18);
+
+  transition: transform 0.25s ease;
+}
+
+.rm-logo:hover .rm-logo-img {
+  transform: rotate(4deg) scale(1.07);
+}
+
+.rm-logo h2 {
+  font-size: 21px;
+  font-weight: 800;
+  background: linear-gradient(to right, #bbf7d0, #86efac);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.6px;
+}
+
+/* =====================================================
+   NAVIGATION LINKS
+===================================================== */
+.rm-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Base Link */
+.rm-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  padding: 14px 16px;
+  border-radius: 14px;
+
+  color: #e5e7eb;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+
+  background: rgba(255,255,255,0.06);
+
+  /* FIX: remove blur here too (causes micro flicker) */
+  /* backdrop-filter: blur(5px); */
+
+  position: relative;
+  cursor: pointer;
+
+  /* FIX: no transitions on background-blur */
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+/* Hover Effect — Lift + Glow */
+.rm-link:hover {
+  background: rgba(255,255,255,0.14);
+  transform: translateX(4px); /* reduced for stability */
+  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+}
+
+/* Ripple (Material You) */
+.rm-link:active {
+  transform: scale(0.97);
+}
+
+/* Icon */
+.rm-icon {
+  font-size: 20px;
+  display: inline-block;
+  transition: 0.25s;
+}
+
+.rm-link:hover .rm-icon {
+  transform: scale(1.25) rotate(4deg);
+}
+
+/* Text */
+.rm-text {
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* =====================================================
+   ACTIVE LINK — NEON AI GREEN
+===================================================== */
+.rm-link.active {
+  background: rgba(34,197,94,0.25);
+  color: #ffffff;
+  font-weight: 600;
+
+  transform: translateX(6px);
+
+  box-shadow: 0 0 30px rgba(34,197,94,0.45);
+}
+
+.rm-link.active::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 18%;
+  width: 5px;
+  height: 65%;
+  background: #22c55e;
+  border-radius: 12px;
+  box-shadow: 0 0 14px #22c55e;
+}
+
+/* =====================================================
+   STATUS WIDGET — GLASSMORPHIC BOX
+===================================================== */
+.rm-sidebar-status {
+  margin-top: auto;
+  padding: 18px 16px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.12);
+
+  backdrop-filter: blur(6px) saturate(160%);
+  -webkit-backdrop-filter: blur(6px) saturate(160%);
+
+  color: #bbf7d0;
+  font-size: 13px;
+  line-height: 1.7;
+
+  box-shadow: inset 0 0 25px rgba(255,255,255,0.05);
+}
+
+.rm-sidebar-status p {
+  margin-bottom: 6px;
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+.rm-sidebar-footer {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
+
+  color: #99f6e4;
+  opacity: 0.85;
+  letter-spacing: 0.4px;
+}
+
+/* =====================================================
+   MOBILE RESPONSIVE
+===================================================== */
+@media (max-width: 768px) {
+  .rm-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .rm-sidebar.open {
+    transform: translateX(0);
+  }
+}

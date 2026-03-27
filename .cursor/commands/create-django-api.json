@@ -1,0 +1,5 @@
+{
+  "name": "create-django-api",
+  "description": "Generate a full Django API including model, serializer, service, viewset, and router.",
+  "prompt": "Create a Django REST API following Arvi's backend architecture rules.\n\nGenerate the following files:\n- models.py (UUID PK, timestamps)\n- serializers.py (validation)\n- services.py (business logic)\n- views.py (viewset calling services)\n- urls.py (router)\n\nAPI Name: {{input}}\n\nFollow:\n- Clean service layer\n- No logic in views\n- DRY code\n- Use proper response format\n- Use select_related/prefetch\n\nWrite code in sections by file path."
+}

@@ -1,0 +1,224 @@
+/* =====================================================================
+   UltraHero.css
+   VisionOS 8K Cinematic FPV HUD (Top Hero Section)
+   — Apple Vision Pro Blur + Parallax + Depth Layers
+===================================================================== */
+
+/* MAIN WRAPPER */
+.ultra-hero-wrapper {
+  width: 100%;
+  height: 420px;
+
+  position: relative;
+  overflow: hidden;
+
+  border-radius: 26px;
+
+  transform-style: preserve-3d;
+
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+
+  box-shadow:
+    0 22px 55px rgba(0,0,0,0.35),
+    inset 0 0 45px rgba(255,255,255,0.25);
+
+  margin-bottom: 32px;
+}
+
+/* VIDEO BACKDROP */
+.ultra-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  z-index: 1;
+
+  filter: brightness(0.88) contrast(1.05) saturate(1.25);
+}
+
+/* TRANSPARENT OVERLAY GRADIENT */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.35),
+    rgba(0,0,0,0.1),
+    rgba(0,0,0,0.5)
+  );
+
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* =====================================================================
+   HUD ELEMENTS
+===================================================================== */
+
+.hero-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: space-between;
+  padding: 25px;
+}
+
+/* TOP HUD BAR */
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hud-tag {
+  font-size: 1rem;
+  color: #eafff2;
+  letter-spacing: 1.5px;
+
+  background: rgba(255,255,255,0.15);
+  padding: 6px 14px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(14px);
+
+  text-shadow: 0 0 12px rgba(255,255,255,0.35);
+}
+
+.hud-expand {
+  width: 34px;
+  height: 34px;
+
+  color: white;
+  opacity: 0.85;
+
+  border-radius: 50%;
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* BOTTOM METRICS */
+.hud-bottom {
+  display: flex;
+  gap: 26px;
+}
+
+.hud-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.m-label {
+  color: #eafff2cc;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.m-value {
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  text-shadow: 0 0 12px rgba(255,255,255,0.45);
+}
+
+/* =====================================================================
+   AGI PARTICLE FIELD
+===================================================================== */
+
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.hero-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+
+  background: #19c37d;
+  border-radius: 50%;
+  filter: blur(3px);
+
+  animation: heroFloat 8s infinite ease-in-out;
+  opacity: 0.85;
+}
+
+@keyframes heroFloat {
+  0%   { transform: translateY(0); opacity: 0.4; }
+  40%  { transform: translateY(-45px); opacity: 0.95; }
+  100% { transform: translateY(0); opacity: 0.4; }
+}
+
+/* =====================================================================
+   DEPTH GLASS WIREFRAME (subtle grid)
+===================================================================== */
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,0.04),
+    transparent 70%
+  );
+
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* =====================================================================
+   HOVER — Cinematic Lift
+===================================================================== */
+
+.ultra-hero-wrapper:hover {
+  transform: translateY(-6px) scale(1.03);
+
+  box-shadow: 
+    0 32px 75px rgba(0,0,0,0.4),
+    inset 0 0 40px rgba(255,255,255,0.25);
+
+  transition: 0.35s ease;
+}
+
+/* =====================================================================
+   RESPONSIVE
+===================================================================== */
+
+@media (max-width: 850px) {
+  .ultra-hero-wrapper {
+    height: 320px;
+  }
+
+  .m-value {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .ultra-hero-wrapper {
+    height: 260px;
+  }
+
+  .hud-bottom {
+    gap: 16px;
+  }
+}
+

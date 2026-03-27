@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # 1. Database
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=rythu_mitra
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # 2. Redis Cache
+  redis:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. Backend API
+  backend:
+    image: ${DOCKERHUB_USERNAME:-yourusername}/rythu-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - "8000"
+    env_file:
+      - backend/.env
+    environment:
+      - DB_HOST=db
+      - REDIS_URL=redis://redis:6379
+      - ALLOWED_HOSTS=16.170.172.200,localhost,127.0.0.1,rythumitra.com,www.rythumitra.com
+      - DEBUG=False
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    command: sh -c "python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8000 --workers 3 project.wsgi:application"
+
+  # 4. Frontend UI
+  frontend:
+    image: ${DOCKERHUB_USERNAME:-yourusername}/rythu-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    expose:
+      - "80"
+    restart: always
+
+  # 5. Nginx Proxy
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./deployment/certbot/conf:/etc/letsencrypt
+      - ./deployment/certbot/www:/var/www/certbot
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+
+  # 6. Certbot (SSL)
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./deployment/certbot/conf:/etc/letsencrypt
+      - ./deployment/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew; done;'"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

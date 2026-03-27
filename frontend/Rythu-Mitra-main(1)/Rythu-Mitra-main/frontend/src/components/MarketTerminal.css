@@ -1,0 +1,192 @@
+/* ============================================================
+   MarketTerminal.css
+   AWS Bedrock × VisionOS Neural Market Forecast Card
+============================================================ */
+
+.market-terminal {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+/* Glass container */
+.market-terminal .market-card {
+  flex: 1;
+
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(25px) saturate(180%);
+
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  transform-style: preserve-3d;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  transition: 0.3s ease;
+}
+
+.dark .market-terminal .market-card {
+  background: rgba(20, 20, 20, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.market-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.market-header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+}
+
+.dark .market-header-title {
+  color: #eaeaea;
+}
+
+.market-header-icon {
+  height: 30px;
+  width: 30px;
+  opacity: 0.85;
+  color: #19c37d;
+}
+
+
+/* ============================================================
+   NEURAL LINE GRAPH (FAKE AGI ANIMATION)
+============================================================ */
+
+.market-chart {
+  width: 100%;
+  height: 120px;
+  position: relative;
+
+  overflow: hidden;
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+
+  backdrop-filter: blur(10px);
+}
+
+/* moving neural lines */
+.neural-line {
+  position: absolute;
+  width: 150%;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #19c37d,
+    transparent
+  );
+
+  opacity: 0.7;
+  animation: neuralMove 2.4s infinite linear;
+}
+
+.neural-line.line-1 {
+  top: 35%;
+  animation-delay: 0s;
+}
+
+.neural-line.line-2 {
+  top: 65%;
+  animation-delay: 1.2s;
+}
+
+@keyframes neuralMove {
+  from {
+    transform: translateX(-20%);
+  }
+  to {
+    transform: translateX(20%);
+  }
+}
+
+
+/* ============================================================
+   PRICE + FORECAST TEXT
+============================================================ */
+
+.market-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.market-price-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: white;
+}
+
+.dark .market-price-row {
+  color: #e5e5e5;
+}
+
+.price-up {
+  color: #1bd97b;
+  text-shadow: 0 0 10px rgba(27, 217, 123, 0.6);
+}
+
+.price-down {
+  color: #ff4d4d;
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.6);
+}
+
+.prediction-text {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.85);
+  opacity: 0.85;
+}
+
+.dark .prediction-text {
+  color: rgba(230,230,230,0.85);
+}
+
+
+/* ============================================================
+   HOVER EFFECT — VisionOS
+============================================================ */
+
+.market-terminal .market-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 22px 45px rgba(0, 0, 0, 0.28);
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 600px) {
+  .market-chart {
+    height: 90px;
+  }
+
+  .market-header-title {
+    font-size: 1.1rem;
+  }
+}

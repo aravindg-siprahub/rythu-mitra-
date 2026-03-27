@@ -1,0 +1,201 @@
+/* ================================================================
+   DroneRadar.css
+   VisionOS AGI Drone Telemetry + Spatial Radar
+================================================================ */
+
+/* Main radar card */
+.radar-card {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
+
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  transform-style: preserve-3d;
+  box-shadow: 0 16px 42px rgba(0,0,0,0.25);
+
+  transition: 0.3s ease;
+}
+
+.dark .radar-card {
+  background: rgba(20,20,20,0.22);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ================================================================
+   Title
+================================================================ */
+.radar-title {
+  color: #eafff2;
+  font-size: 1.25rem;
+  font-weight: 600;
+
+  text-align: center;
+  text-shadow: 0 0 12px rgba(255,255,255,0.3);
+}
+
+/* ================================================================
+   Radar Container (Circle)
+================================================================ */
+.radar-circle {
+  width: 100%;
+  flex: 1;
+
+  aspect-ratio: 1 / 1;
+
+  border-radius: 50%;
+  position: relative;
+
+  margin: auto;
+
+  background: radial-gradient(
+    circle,
+    rgba(25,195,125,0.25) 0%,
+    rgba(25,195,125,0.15) 30%,
+    rgba(0,0,0,0.1) 60%,
+    transparent 100%
+  );
+
+  overflow: hidden;
+
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+/* ================================================================
+   Rotating Radar Sweep (green sweeping light)
+================================================================ */
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+
+  background: conic-gradient(
+    rgba(25,195,125,0.45),
+    rgba(25,195,125,0.15),
+    transparent 55%
+  );
+
+  animation: sweepRotate 4.5s linear infinite;
+}
+
+@keyframes sweepRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   Radar Grid — AWS Mesh Lines
+================================================================ */
+.radar-grid {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.radar-grid::before,
+.radar-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.radar-grid::after {
+  transform: scale(0.62);
+  opacity: 0.45;
+}
+
+/* Crosshair Lines */
+.radar-grid .line-h,
+.radar-grid .line-v {
+  position: absolute;
+  background: rgba(255,255,255,0.25);
+}
+
+.radar-grid .line-h {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+}
+
+.radar-grid .line-v {
+  height: 100%;
+  width: 1px;
+  left: 50%;
+}
+
+/* ================================================================
+   Drone Dots (moving telemetry points)
+================================================================ */
+
+.drone-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+
+  background: #19c37d;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(25,195,125,0.7);
+
+  animation: dotPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes dotPulse {
+  0%   { transform: scale(0.85); opacity: 0.4; }
+  50%  { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.5; }
+}
+
+/* ================================================================
+   Heatmap Particles (cluster activity)
+================================================================ */
+
+.heat-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+  background: rgba(255, 214, 65, 0.85);
+  filter: blur(4px);
+
+  animation: heatPulse 3s infinite ease-in-out;
+}
+
+@keyframes heatPulse {
+  0%   { transform: scale(0.8); opacity: 0.45; }
+  50%  { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.55; }
+}
+
+/* ================================================================
+   HOVER — Lift & Glow
+================================================================ */
+.radar-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.3);
+}
+
+/* ================================================================
+   RESPONSIVE
+================================================================ */
+
+@media (max-width: 600px) {
+  .radar-title {
+    font-size: 1.1rem;
+  }
+}

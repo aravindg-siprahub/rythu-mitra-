@@ -1,0 +1,40 @@
+name: Deploy Rythu Mitra to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSII_KEY || secrets.EC2_SSH_KEY }}
+          timeout: 180s
+          script: |
+            set -e
+            # Ensure the directory exists and is a git repo, otherwise clone it
+            if [ ! -d "~/rythu-mitra-" ]; then
+              git clone https://github.com/aravindg-siprahub/rythu-mitra-.git ~/rythu-mitra- || true
+            fi
+            cd ~/rythu-mitra-
+            git pull origin main
+            cat > .env << 'EOF'
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            ALGORITHM=HS256
+            ACCESS_TOKEN_EXPIRE_MINUTES=30
+            ASSEMBLYAI_API_KEY=${{ secrets.ASSEMBLYAI_API_KEY }}
+            OPENROUTER_API=${{ secrets.OPENROUTER_API }}
+            REDIS_URL=redis://redis:6379/0
+            PORT=8000
+            DEV_EXECUTION_MODE=False
+            EOF
+            docker-compose down
+            docker-compose up --build -d
+            docker image prune -f
+            docker-compose ps

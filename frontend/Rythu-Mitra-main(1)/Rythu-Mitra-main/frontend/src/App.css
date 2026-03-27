@@ -1,0 +1,264 @@
+/* ===========================================================
+      GLOBAL APP.CSS — VISION PRO ULTRA UI (Future 30× Edition)
+      Rythu Mitra AGI OS — Apple Spatial Engine + AGI Runtime
+   =========================================================== */
+
+/* -----------------------------------------------------------
+   ROOT VARIABLES — VisionOS + AGI Color System
+-------------------------------------------------------------*/
+:root {
+  --vp-bg-light: #f5f5f7;
+  --vp-bg-dark: #050505;
+
+  --vp-text-light: #1d1d1f;
+  --vp-text-dark: #ececec;
+
+  --vp-accent: #19c37d;
+  --vp-accent-glow: rgba(25, 195, 125, 0.45);
+
+  --vp-glass-light: rgba(255, 255, 255, 0.45);
+  --vp-glass-dark: rgba(10, 10, 10, 0.45);
+
+  --vp-card-bg-light: rgba(255, 255, 255, 0.65);
+  --vp-card-bg-dark: rgba(25, 25, 25, 0.45);
+
+  --vp-radius: 24px;
+
+  --vp-shadow: 0 25px 48px rgba(0, 0, 0, 0.15);
+  --vp-shadow-dark: 0 25px 48px rgba(0, 0, 0, 0.45);
+
+  --vp-transition: 0.32s ease;
+}
+
+/* -----------------------------------------------------------
+   AUTO DARK MODE — Mirrors macOS / iOS / Vision Pro Dark UI
+-------------------------------------------------------------*/
+.dark {
+  --vp-bg-light: var(--vp-bg-dark);
+  --vp-text-light: var(--vp-text-dark);
+  --vp-glass-light: var(--vp-glass-dark);
+  --vp-card-bg-light: var(--vp-card-bg-dark);
+}
+
+/* -----------------------------------------------------------
+   GLOBAL RESET
+-------------------------------------------------------------*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--vp-bg-light);
+  color: var(--vp-text-light);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    Inter, Poppins, sans-serif;
+
+  transition: background var(--vp-transition),
+              color var(--vp-transition);
+
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* -----------------------------------------------------------
+   TEXT SELECTION — Apple-style green highlight
+-------------------------------------------------------------*/
+::selection {
+  background: var(--vp-accent);
+  color: white;
+}
+
+/* -----------------------------------------------------------
+   APP WRAPPER — Spatial
+-------------------------------------------------------------*/
+.app-layout {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* -----------------------------------------------------------
+   MAIN CONTENT AREA
+-------------------------------------------------------------*/
+.app-main {
+  width: 100%;
+  padding-top: 110px;
+  position: relative;
+  z-index: 3;
+}
+
+/* -----------------------------------------------------------
+   DEPTH WRAPPER — VisionOS Spatial Layer
+-------------------------------------------------------------*/
+.depth-wrapper {
+  perspective: 1500px;
+  perspective-origin: center;
+  transform-style: preserve-3d;
+}
+
+/* -----------------------------------------------------------
+   PAGE TRANSITION — Vision Pro
+-------------------------------------------------------------*/
+.page-transition {
+  width: 100%;
+  transform-style: preserve-3d;
+  animation: vpFadeIn 0.45s ease forwards;
+}
+
+@keyframes vpFadeIn {
+  from { opacity: 0; transform: translateY(25px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* -----------------------------------------------------------
+   GLASS UI
+-------------------------------------------------------------*/
+.glass {
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+
+  background: var(--vp-glass-light);
+  border-radius: var(--vp-radius);
+  border: 1px solid rgba(255,255,255,0.3);
+
+  transition: var(--vp-transition);
+}
+
+/* -----------------------------------------------------------
+   CARDS (Apple Vision Style)
+-------------------------------------------------------------*/
+.vp-card {
+  background: var(--vp-card-bg-light);
+  border-radius: var(--vp-radius);
+  backdrop-filter: blur(30px);
+  padding: 22px;
+  box-shadow: var(--vp-shadow);
+  transition: var(--vp-transition);
+}
+
+.dark .vp-card {
+  box-shadow: var(--vp-shadow-dark);
+}
+
+/* -----------------------------------------------------------
+   GLOBAL SCROLLBAR
+-------------------------------------------------------------*/
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.25);
+}
+
+/* -----------------------------------------------------------
+   LOADER (App.js)
+-------------------------------------------------------------*/
+.vp-loader-screen {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+  background: var(--vp-bg-light);
+  z-index: 9999;
+}
+
+.vp-spinner {
+  height: 65px;
+  width: 65px;
+  border: 5px solid rgba(0,0,0,0.06);
+  border-top: 5px solid var(--vp-accent);
+  border-radius: 50%;
+}
+
+.vp-loading-text {
+  font-size: 1.15rem;
+  opacity: 0.75;
+}
+
+/* -----------------------------------------------------------
+   BUTTON SYSTEM (Apple Design)
+-------------------------------------------------------------*/
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 14px;
+  font-weight: 600;
+  padding: 12px 18px;
+  transition: 0.25s ease;
+}
+
+button.primary {
+  background: var(--vp-accent);
+  color: white;
+}
+
+button.secondary {
+  background: rgba(0,0,0,0.10);
+}
+
+.dark button.secondary {
+  background: rgba(255,255,255,0.15);
+  color: var(--vp-text-dark);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* -----------------------------------------------------------
+   AGI PARTICLE ENGINE (Upgraded v3)
+-------------------------------------------------------------*/
+.agi-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.agi-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vp-accent-glow);
+  box-shadow: 0 0 12px var(--vp-accent);
+
+  animation: agiFloat 6s infinite ease-in-out;
+  mix-blend-mode: screen;
+}
+
+@keyframes agiFloat {
+  0%   { transform: translateY(0) scale(0.7); opacity: 0.5; }
+  50%  { transform: translateY(-40px) scale(1.4); opacity: 1; }
+  100% { transform: translateY(0) scale(0.7); opacity: 0.5; }
+}
+
+/* -----------------------------------------------------------
+   RESPONSIVE MODES — Apple Optimized
+-------------------------------------------------------------*/
+@media (max-width: 1100px) {
+  .app-main { padding-top: 90px; }
+}
+
+@media (max-width: 900px) {
+  .page-transition { padding: 0 18px; }
+}
+
+@media (max-width: 600px) {
+  .vp-loading-text { font-size: 0.9rem; }
+}
