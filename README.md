@@ -52,3 +52,9 @@ cd frontend
 npm install
 npm start
 ```
+
+### for celery +redis
+commands are:-
+cd backend
+celery -A rythu_mitra worker -l info --pool=solo
+
