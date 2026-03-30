@@ -1,44 +1,22 @@
-import React, { useState, useEffect, Suspense, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../utils/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../config/supabaseClient';
+import { mapSupabaseUserToAppUser, persistAppUserSnapshot } from '../../utils/mapSupabaseUser';
 import { getFarmerCity } from '../../utils/locationService';
-
-// ── Haversine distance helper ──────────────────────────────────────────────
-const haversineDistanceKm = (lat1, lon1, lat2, lon2) => {
-  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c);
-};
-
-// ── Auto-title generator ───────────────────────────────────────────────────
-const generateJobTitle = (wType, crop, workers, location, date) => {
-  const workerText = parseInt(workers) > 1 ? `${workers} workers` : '1 worker';
-  const dateStr = date
-    ? new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-    : '';
-  const parts = [crop, wType, '—', workerText, 'needed'];
-  if (location) parts.push('·', location);
-  if (dateStr) parts.push('·', dateStr);
-  return parts.join(' ').replace(/\s+/g, ' ').trim();
-};
-
-const API_BASE = '/api/v1/work';
-
-const getSafeName = (name, isSelected) => {
-  if (!name) return 'Farmer';
-  if (name.includes('@')) return 'Farmer'; // Privacy: Never show email
-  if (isSelected) return name;
-  return name.split(' ')[0];
-};
+import LaborMarketHeader from './LaborMarketHeader';
+import {
+  JOB_CATEGORIES,
+  WORK_TYPES_BY_CATEGORY,
+  haversineDistanceKm,
+  generateJobTitle,
+  getSafeName,
+  getJobIcon,
+} from './laborConstants';
+import { isLaborProviderRole } from './laborRoleUtils';
+import * as workApi from '../../services/workApi';
+import SupplierRegistrationForm from './SupplierRegistrationForm';
 
 // =============================================================================
 //  WORK MODULE — UNIFIED EXPERIENCE
@@ -46,8 +24,9 @@ const getSafeName = (name, isSelected) => {
 
 export default function WorkPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [role, setRole] = useState(localStorage.getItem('rm_role'));
+  const { user: authUser, loading: authLoading } = useAuth();
+  const [laborSearch, setLaborSearch] = useState('');
+  const [role, setRole] = useState(() => localStorage.getItem('rm_role'));
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [needsRegistration, setNeedsRegistration] = useState(false);
@@ -59,75 +38,85 @@ export default function WorkPage() {
     }, []);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('rythu_user') || localStorage.getItem('user') || 'null');
-    if (storedUser) {
-      console.log('WorkPage: Loaded user from storage:', storedUser);
-      setUser(storedUser);
-    } else {
-      navigate('/login');
+    if (authLoading) return;
+
+    if (!authUser) {
+      navigate('/login', { replace: true });
       return;
     }
 
+    const mapped = mapSupabaseUserToAppUser(authUser);
+    persistAppUserSnapshot(mapped);
+    setUser(mapped);
+
     const checkRoleAndRegistration = async () => {
-      // 1. Check profiles table for role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('user_role')
-        .eq('id', storedUser.id)
-        .single();
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_role')
+          .eq('id', mapped.id)
+          .maybeSingle();
 
-      if (profile?.user_role) {
-        setRole(profile.user_role);
-        localStorage.setItem('rm_role', profile.user_role);
+        if (profile?.user_role) {
+          setRole(profile.user_role);
+          localStorage.setItem('rm_role', profile.user_role);
 
-        // 2. If supplier, check if they need registration
-        if (profile.user_role === 'supplier') {
-          const { data: supplierProfile } = await supabase
-            .from('supplier_profiles')
-            .select('id')
-            .eq('user_id', storedUser.id)
-            .single();
+          if (isLaborProviderRole(profile.user_role)) {
+            const { data: supplierProfile } = await supabase
+              .from('supplier_profiles')
+              .select('id')
+              .eq('user_id', mapped.id)
+              .maybeSingle();
 
-          if (!supplierProfile) {
-            setNeedsRegistration(true);
+            if (!supplierProfile) {
+              setNeedsRegistration(true);
+            }
           }
+        } else {
+          const storedRole = localStorage.getItem('rm_role') || 'farmer';
+          setRole(storedRole);
         }
-      } else {
-        // Fall back to stored role from localStorage if profile row is missing user_role
-        const storedRole = localStorage.getItem('rm_role') || 'farmer';
-        setRole(storedRole);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkRoleAndRegistration();
-  }, [navigate]);
+  }, [authUser, authLoading, navigate]);
 
-  if (loading) return <LoadingSpinner />;
+  if (authLoading || loading) return <LoadingSpinner />;
 
-  if (role === 'supplier' && needsRegistration) {
+  if (isLaborProviderRole(role) && needsRegistration) {
     return <SupplierRegistrationForm user={user} onComplete={() => setNeedsRegistration(false)} />;
   }
 
   return (
-    <div className="min-h-screen pb-20 relative overflow-hidden" 
-      style={{
-        background: 'radial-gradient(circle at top right, #F0FDF4 0%, #F8FAFC 40%)'
-      }}>
-      {/* Premium background mesh or subtle ornament could go here */}
-      {role === 'farmer' ? <FarmerView user={user} /> : <SupplierView user={user} />}
+    <div
+      className="min-h-screen pb-20 relative overflow-hidden bg-gradient-to-br from-emerald-50/80 via-slate-50 to-violet-50/50"
+    >
+      <LaborMarketHeader user={user} searchQuery={laborSearch} onSearchChange={setLaborSearch} />
+
+      <div className="max-w-6xl mx-auto">
+        {role === 'farmer' ? (
+          <FarmerView user={user} />
+        ) : (
+          <SupplierView user={user} laborSearch={laborSearch} />
+        )}
+      </div>
     </div>
   );
 }
+
 
 // ─── COMPONENTS ─────────────────────────────────────────────────────────────
 
 function LoadingSpinner() {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white z-[100]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin" />
-        <p className="text-green-800 font-bold">Loading...</p>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-emerald-50/95 via-white to-violet-50/90 backdrop-blur-sm">
+      <div className="flex flex-col items-center gap-5 rounded-3xl border border-white/60 bg-white/70 px-10 py-8 shadow-xl shadow-emerald-500/10">
+        <div className="h-12 w-12 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin" />
+        <p className="text-sm font-bold uppercase tracking-widest text-emerald-800/80">Labor Market</p>
+        <p className="text-xs text-slate-500">Loading your workspace…</p>
       </div>
     </div>
   );
@@ -171,67 +160,6 @@ function FarmerView({ user }) {
     </div>
   );
 }
-
-const JOB_CATEGORIES = [
-  {
-    id: 'worker',
-    label: 'Farm Worker',
-    emoji: '👨\u200d🌾',
-    color: '#166534',
-    bg: '#f0fdf4',
-    border: '#86efac',
-    description: 'Hire daily wage workers for harvesting, planting, weeding and general farm tasks.',
-    typical_rate: '₹400–700/day',
-    typical_need: '1–20 workers',
-    popular_for: ['Harvesting', 'Planting', 'Weeding', 'Spraying'],
-  },
-  {
-    id: 'transport',
-    label: 'Transport / Vehicle',
-    emoji: '🚛',
-    color: '#1d4ed8',
-    bg: '#eff6ff',
-    border: '#bfdbfe',
-    description: 'Hire lorries, tractors, and transport vehicles for carrying produce to mandi or materials to farm.',
-    typical_rate: '₹800–2000/trip',
-    typical_need: '1–3 vehicles',
-    popular_for: ['Lorry to mandi', 'Tractor ploughing', 'Sand/gravel transport', 'Produce delivery'],
-  },
-  {
-    id: 'sprayer',
-    label: 'Sprayer / Equipment',
-    emoji: '🔧',
-    color: '#92400e',
-    bg: '#fffbeb',
-    border: '#fcd34d',
-    description: 'Hire sprayer machines, pump sets, and farm equipment operators for pesticide and irrigation work.',
-    typical_rate: '₹300–600/day',
-    typical_need: '1–2 units',
-    popular_for: ['Pesticide spraying', 'Pump set rental', 'Power tiller', 'Harvester machine'],
-  },
-  {
-    id: 'equipment',
-    label: 'Heavy Equipment',
-    emoji: '🏗️',
-    color: '#6b21a8',
-    bg: '#f5f3ff',
-    border: '#c4b5fd',
-    description: 'Hire JCB, excavators, levelling machines and heavy equipment for land preparation and construction.',
-    typical_rate: '₹1500–4000/day',
-    typical_need: '1 unit',
-    popular_for: ['JCB / excavator', 'Land levelling', 'Borewell drilling', 'Farm pond digging'],
-  },
-];
-
-const WORK_TYPES_BY_CATEGORY = {
-  worker:    ['Harvesting', 'Planting', 'Spraying', 'Weeding', 'Loading', 'Other'],
-  transport: ['Lorry to mandi', 'Tractor ploughing', 'Produce delivery', 'Sand transport', 'Other'],
-  sprayer:   ['Pesticide spraying', 'Pump set rental', 'Power tiller', 'Drone spraying', 'Other'],
-  equipment: ['JCB / Excavator', 'Land levelling', 'Borewell drilling', 'Farm pond', 'Other'],
-};
-
-const DISTRICTS = ['Annamayya (Madanapalle)', 'Chittoor', 'Tirupati', 'Anantapur', 'Kadapa', 'SPSR Nellore'];
-const SKILLS = ['Harvesting', 'Ploughing', 'Seeding', 'Pesticide Spray', 'General Labor'];
 
 function PostJobForm({ user, onDone }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -295,7 +223,6 @@ function PostJobForm({ user, onDone }) {
     }
 
     setSubmitting(true);
-    let response = null;
     try {
       // Phase 3 — get GPS coords from localStorage
       let gpsLat = null;
@@ -342,32 +269,12 @@ function PostJobForm({ user, onDone }) {
 
       console.log('Posting job with payload:', payload);
 
-      response = await fetch(`${API_BASE}/create/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      // Fix 2b — Safe parse — handle both JSON and non-JSON responses
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server error (Non-JSON). Please try again.');
-      }
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess(true);
-      } else {
-        throw new Error(data.error || 'Failed to post job.');
-      }
+      await workApi.createJobPost(payload);
+      setSuccess(true);
     } catch (e) { 
       console.error('Submit Error:', e);
-      // Fix 2c — Fix error message shown to farmer
       if (e.message.includes('constraint')) {
         setFormError('Job could not be posted. Check your entered values.');
-      } else if (response?.status === 500) {
-        setFormError('Server error. Please try again in a moment.');
       } else if (!navigator.onLine) {
         setFormError('No internet connection. Please check your network.');
       } else {
@@ -735,9 +642,16 @@ function MyPosts({ farmerId, user }) {
   const [completingSaving, setCompletingSaving] = useState(false);
 
   const fetchPosts = () => {
-    fetch(`${API_BASE}/farmer/${farmerId}/posts/`)
-      .then(res => res.json())
-      .then(data => { setPosts(data.posts || []); setLoading(false); });
+    workApi
+      .fetchFarmerPosts(farmerId)
+      .then((list) => {
+        setPosts(list || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setPosts([]);
+        setLoading(false);
+      });
   };
 
   useEffect(() => { fetchPosts(); }, [farmerId]);
@@ -871,7 +785,7 @@ function ApplicantsModal({ job, onClose, farmerId }) {
         .from('job_applications')
         .select('*')
         .eq('job_post_id', jobId)
-        .order('created_at', { ascending: false });
+        .order('applied_at', { ascending: false });
 
       if (!apps?.length) { setApplicants([]); setLoading(false); return; }
 
@@ -903,16 +817,10 @@ function ApplicantsModal({ job, onClose, farmerId }) {
                     : action === 'reject' ? 'rejected'
                     : 'applied'; // undo → back to applied
     try {
-      const res = await fetch(`${API_BASE}/application/${applicationId}/status/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ farmer_id: farmerId, status: newStatus })
-      });
-      if (res.ok) {
-        setApplicants(prev => prev.map(a =>
-          a.id === applicationId ? { ...a, status: newStatus } : a
-        ));
-      }
+      await workApi.updateApplicationStatus(applicationId, farmerId, newStatus);
+      setApplicants(prev => prev.map(a =>
+        a.id === applicationId ? { ...a, status: newStatus } : a
+      ));
     } catch (e) {
       console.error('Status update failed:', e);
       alert('Failed to update. Please try again.');
@@ -924,18 +832,24 @@ function ApplicantsModal({ job, onClose, farmerId }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,0.55)',
-        display: 'flex', alignItems: 'flex-end',
-        justifyContent: 'center', zIndex: 1000
+        background: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'center', zIndex: 1000,
+        padding: 20
       }}
     >
-      <div style={{
-        background: '#fff',
-        borderRadius: '20px 20px 0 0',
-        width: '100%', maxWidth: 520,
-        maxHeight: '85vh', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column'
-      }}>
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        style={{
+          background: '#fff',
+          borderRadius: 24,
+          width: '100%', maxWidth: 480,
+          maxHeight: '90vh', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}>
 
         {/* Modal header */}
         <div style={{
@@ -1037,8 +951,8 @@ function ApplicantsModal({ job, onClose, farmerId }) {
 
                   {/* Applied date */}
                   <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
-                    Applied {app.created_at
-                      ? new Date(app.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                    Applied {app.applied_at
+                      ? new Date(app.applied_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                       : 'recently'}
                   </div>
 
@@ -1103,7 +1017,7 @@ function ApplicantsModal({ job, onClose, farmerId }) {
             >Done</button>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -1113,8 +1027,8 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
   const [applied, setApplied] = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
 
-  const isOpen = job.status === 'open';
-  // Fix 1 — green left border for open, gray for closed
+  const isOpen = workApi.isJobOpenStatus(job.status);
+  // green left border for open, gray for closed / filled
   const leftBorderColor = isOpen ? '#166534' : '#D1D5DB';
 
   const handleApply = async () => {
@@ -1132,57 +1046,46 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
         return;
       }
 
-      const res = await fetch(`${API_BASE}/${job.id}/apply/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ supplier_profile_id: profile.id })
-      });
-
-      if (res.ok) {
-        setApplied(true);
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to apply');
-      }
+      await workApi.applyToJob(job.id, profile.id, '');
+      setApplied(true);
     } catch (e) {
-      alert('Error applying to job');
+      alert(e.message || 'Error applying to job');
     } finally {
       setApplying(false);
     }
   };
 
-  // Fix 7 — close/reopen handler
   const handleToggleStatus = async () => {
     if (!onToggleStatus) return;
+    const farmerUid = user?.id || user?.user_id;
+    if (!farmerUid) {
+      alert('Session expired. Please log in again.');
+      return;
+    }
     setTogglingStatus(true);
     const newStatus = isOpen ? 'closed' : 'open';
     try {
-      await fetch(`${API_BASE}/${job.id}/status/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
+      await workApi.updateJobPostStatus(job.id, farmerUid, newStatus);
       onToggleStatus(job.id, newStatus);
     } catch (e) {
-      // Optimistic update even if API not yet wired
-      onToggleStatus(job.id, newStatus);
+      console.error(e);
+      alert(e.message || 'Could not update job status.');
     } finally {
       setTogglingStatus(false);
     }
   };
 
-  // Farmer card
   if (isFarmer) {
     const appCount = job.job_applications_count || 0;
     const payDisplay = job.daily_rate
       ? `₹${job.daily_rate}/${job.pay_unit || 'day'}`
       : 'Negotiable';
-    const typeIcon = getJobIcon ? getJobIcon(job.service_type) : '🌾';
+    const typeIcon = getJobIcon(job.service_type);
     const displayTitle = job.auto_title || job.title || 'Farm job';
-    const leftBar = job.is_completed ? '#9ca3af'
-                  : job.status === 'closed' ? '#ef4444'
-                  : appCount > 0 ? '#f59e0b'
-                  : '#16a34a';
+    const leftBar = job.is_completed ? '#94A3B8'
+                  : workApi.isJobClosedStatus(job.status) ? '#EF4444'
+                  : appCount > 0 ? '#F59E0B'
+                  : '#10B981';
 
     const dateLabel = (() => {
       const d = job.scheduled_date || job.date_required;
@@ -1201,110 +1104,81 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
     return (
       <div style={{
         background: '#fff',
-        borderRadius: 16,
-        border: '0.5px solid #E5E7EB',
-        borderLeft: `4px solid ${leftBar}`,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+        borderRadius: 20,
+        border: '1px solid #F1F5F9',
+        borderLeft: `5px solid ${leftBar}`,
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)',
         overflow: 'hidden',
-        marginBottom: 12,
-        transition: 'box-shadow 0.15s'
+        marginBottom: 16,
+        transition: 'transform 0.15s ease'
       }}>
-        <div style={{ padding: '14px 16px' }}>
-          {/* TOP ROW */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flex: 1, minWidth: 0 }}>
+        <div style={{ padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1, minWidth: 0 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: 6, background: '#DCFCE7',
+                width: 36, height: 36, borderRadius: 10, background: '#F0FDF4',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, flexShrink: 0
+                fontSize: 18, flexShrink: 0
               }}>{typeIcon}</div>
               <div style={{ minWidth: 0 }}>
-                <h4 style={{ fontSize: 14, fontWeight: 500, color: '#111827', margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: 0, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
                   {displayTitle}
                 </h4>
-                {/* Phase 3 — work_type + crop badges */}
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 3 }}>
-                  {job.work_type && <span style={{ fontSize: 10, background: '#e0f2fe', color: '#0369a1', borderRadius: 12, padding: '1px 7px', fontWeight: 500 }}>{job.work_type}</span>}
-                  {job.crop && <span style={{ fontSize: 10, background: '#f0fdf4', color: '#166534', borderRadius: 12, padding: '1px 7px', fontWeight: 500 }}>{job.crop}</span>}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                  {job.work_type && <span style={{ fontSize: 10, background: '#F1F5F9', color: '#475569', borderRadius: 6, padding: '2px 8px', fontWeight: 600, textTransform: 'uppercase' }}>{job.work_type}</span>}
+                  <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>{getSafeName(job.farmer_name, false)}</span>
                 </div>
-                <p style={{ fontSize: 12, color: '#6B7280', margin: '2px 0 0' }}>{getSafeName(job.farmer_name, false)}</p>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0, marginLeft: 8 }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0, marginLeft: 12 }}>
               {job.urgency === 'urgent' && (
-                <span style={{ background: '#FEE2E2', color: '#991B1B', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>Urgent</span>
+                <span style={{ background: '#FEF2F2', color: '#EF4444', fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Urgent</span>
               )}
               <span style={{
-                background: isOpen ? '#DCFCE7' : '#F3F4F6',
-                color: isOpen ? '#166534' : '#6B7280',
-                fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, textTransform: 'uppercase'
+                background: isOpen ? '#DCFCE7' : '#F1F5F9',
+                color: isOpen ? '#166534' : '#64748B',
+                fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em'
               }}>{isOpen ? 'Open' : 'Closed'}</span>
             </div>
           </div>
 
-          {/* DETAILS ROW — Fix 4 */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginBottom: 10 }}>
-            <span style={{ fontSize: 12, color: '#6B7280' }}>📅 {new Date(job.scheduled_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-            <span style={{ fontSize: 12, color: '#6B7280' }}>📍 {job.farmer_district || job.location || '—'}</span>
-            <span style={{ fontSize: 12, color: '#6B7280' }}>💰 {payDisplay}</span>
-            <span style={{ fontSize: 12, color: '#6B7280' }}>👥 {job.workers_needed || job.units || 1} needed</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', fontWeight: 500 }}>
+              <span style={{ color: '#94A3B8' }}>📅</span> {new Date(job.scheduled_date || job.date_required).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', fontWeight: 500 }}>
+              <span style={{ color: '#94A3B8' }}>📍</span> {job.farmer_district || job.location || '—'}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', fontWeight: 600 }}>
+              <span style={{ color: '#94A3B8' }}>💰</span> {payDisplay}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', fontWeight: 500 }}>
+              <span style={{ color: '#94A3B8' }}>👥</span> {job.workers_needed || job.units || 1} needed
+            </div>
           </div>
 
-          {/* STATS ROW */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #F3F4F6', paddingTop: 8, marginTop: 4 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: '#9CA3AF', flexWrap: 'wrap' }}>
-              <span>👁 {job.views_count || job.view_count || 0} {(job.views_count || job.view_count || 0) === 1 ? 'view' : 'views'}</span>
-              <span>·</span>
-              <span style={{ color: appCount > 0 ? '#166534' : '#9CA3AF', fontWeight: appCount > 0 ? 600 : 400 }}>
-                👥 {appCount} {appCount === 1 ? 'application' : 'applications'}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #F1F5F9', paddingTop: 14, marginTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: '#94A3B8', flexWrap: 'wrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>👁️ {job.views_count || 0} views</span>
+              <span style={{ color: appCount > 0 ? '#059669' : '#94A3B8', fontWeight: appCount > 0 ? 600 : 400, display: 'flex', alignItems: 'center', gap: 4 }}>
+                👥 {appCount} applications
               </span>
-              {dateLabel && (
-                <>
-                  <span>·</span>
-                  <span style={{ color: dateLabel.isPast ? '#b91c1c' : '#9CA3AF' }}>📅 {dateLabel.text}</span>
-                </>
-              )}
+              {dateLabel && <span style={{ color: dateLabel.isPast ? '#EF4444' : '#94A3B8' }}>📅 {dateLabel.text}</span>}
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              {/* Share button */}
-              <button
-                onClick={handleShare}
-                style={{
-                  background: '#25D366', color: '#fff',
-                  border: 'none', borderRadius: 8,
-                  padding: '4px 10px', fontSize: 11,
-                  fontWeight: 500, cursor: 'pointer'
-                }}
-              >💬 Share</button>
-              {/* Mark Complete button */}
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button onClick={handleShare} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, cursor: 'pointer', color: '#64748B' }} title="Share job">💬</button>
+              
               {job.is_completed ? (
-                <span style={{ fontSize: 12, color: '#166534', fontWeight: 500 }}>✅ Completed</span>
+                <span style={{ fontSize: 13, color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>✅ Completed</span>
               ) : (
                 onMarkComplete && !isOpen && (
-                  <button onClick={() => onMarkComplete(job)}
-                    style={{ background: '#166534', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 500, cursor: 'pointer' }}>
-                    ✓ Mark Complete
-                  </button>
+                  <button onClick={() => onMarkComplete(job)} style={{ background: '#059669', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(5, 150, 105, 0.2)' }}>✓ Mark Complete</button>
                 )
               )}
-              {/* Fix 7 — Close / Reopen button */}
-              <button
-                onClick={handleToggleStatus}
-                disabled={togglingStatus}
-                style={{
-                  fontSize: 11, fontWeight: 600, padding: '3px 10px',
-                  borderRadius: 6, cursor: 'pointer',
-                  background: 'transparent', transition: 'all 0.15s',
-                  border: isOpen ? '1px solid #EF4444' : '1px solid #166534',
-                  color: isOpen ? '#EF4444' : '#166534',
-                }}>
-                {togglingStatus ? '...' : isOpen ? 'Close Job' : 'Reopen'}
-              </button>
-              <button
-                onClick={onViewApplicants}
-                style={{ fontSize: 12, color: '#166534', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                View All ▼
-              </button>
+
+              <button onClick={handleToggleStatus} disabled={togglingStatus} style={{ fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 10, cursor: 'pointer', background: isOpen ? '#FEF2F2' : '#F0FDF4', border: 'none', color: isOpen ? '#EF4444' : '#166534', transition: 'all 0.15s ease' }}>{togglingStatus ? '...' : isOpen ? 'Close Job' : 'Reopen'}</button>
+              
+              <button onClick={onViewApplicants} style={{ fontSize: 13, color: '#059669', fontWeight: 800, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>View All <span style={{ fontSize: 10 }}>▼</span></button>
             </div>
           </div>
         </div>
@@ -1361,15 +1235,9 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
   );
 }
 
-// ─── SUPPLIER VIEW ──────────────────────────────────────────────────────────
+// ─── SUPPLIER / WORKER VIEW ─────────────────────────────────────────────────
 
-const JOB_ICONS = {
-  worker: '👷', labour: '👷', tractor: '🚜',
-  transport: '🚛', sprayer: '💧', equipment: '🔧',
-};
-const getJobIcon = (type) => JOB_ICONS[(type || '').toLowerCase()] || '🌾';
-
-function SupplierView({ user }) {
+function SupplierView({ user, laborSearch = '' }) {
   const [activeTab, setActiveTab] = useState('browse');
   const [posts, setPosts] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -1377,21 +1245,30 @@ function SupplierView({ user }) {
   const [appliedJobs, setAppliedJobs] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/feed/`)
-      .then(res => res.json())
-      .then(data => setPosts(data.posts || []));
+    workApi
+      .fetchJobFeed()
+      .then(setPosts)
+      .catch(() => setPosts([]));
 
     if (user) {
-      supabase.from('supplier_profiles').select('*').eq('user_id', user.id || user.user_id).single()
-        .then(({data}) => {
+      supabase
+        .from('supplier_profiles')
+        .select('*')
+        .eq('user_id', user.id || user.user_id)
+        .single()
+        .then(({ data }) => {
           if (data) {
-             setProfile(data);
-             fetch(`${API_BASE}/supplier/${data.id}/applications/`)
-               .then(res => res.json())
-               .then(appData => {
-                 setApps(appData.applications || []);
-                 setAppliedJobs((appData.applications || []).map(a => a.job_posts?.id || a.job_id));
-               });
+            setProfile(data);
+            workApi
+              .fetchSupplierApplications(data.id)
+              .then((applications) => {
+                setApps(applications || []);
+                setAppliedJobs((applications || []).map((a) => a.job_posts?.id || a.job_id));
+              })
+              .catch(() => {
+                setApps([]);
+                setAppliedJobs([]);
+              });
           }
         });
     }
@@ -1413,7 +1290,7 @@ function SupplierView({ user }) {
     try {
       const { data } = await supabase
         .from('profiles')
-        .select('id, name, phone, location, rating, created_at')
+        .select('id, full_name, name, phone, location, village, district, rating, created_at')
         .eq('id', farmerId)
         .single();
       setFarmerProfile(data);
@@ -1467,13 +1344,31 @@ function SupplierView({ user }) {
     return status;
   };
 
-  const handleApply = (jobId) => {
-    if (!appliedJobs.includes(jobId)) {
-        setAppliedJobs(prev => [...prev, jobId]);
-        const job = posts.find(p => p.id === jobId);
-        if (job) {
-            setApps(prev => [...prev, { id: Date.now(), job_posts: job, status: 'applied', created_at: new Date().toISOString() }]);
-        }
+  const handleApply = async (jobId) => {
+    if (!profile) {
+      alert('Please complete your worker profile first.');
+      return;
+    }
+    if (appliedJobs.includes(jobId)) return;
+    try {
+      await workApi.applyToJob(jobId, profile.id, '');
+      setAppliedJobs((prev) => [...prev, jobId]);
+      const job = posts.find((p) => p.id === jobId);
+      if (job) {
+        setApps((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            job_posts: job,
+            status: 'applied',
+            applied_at: new Date().toISOString(),
+          },
+        ]);
+      }
+      alert('Application submitted! The farmer will review your profile.');
+    } catch (e) {
+      console.error('Application error:', e);
+      alert(e.message || 'Could not submit application.');
     }
   };
 
@@ -1486,6 +1381,11 @@ function SupplierView({ user }) {
   };
 
   const filteredPosts = posts.filter(p => {
+    if (laborSearch && laborSearch.trim()) {
+      const q = laborSearch.trim().toLowerCase();
+      const hay = `${p.title || ''} ${p.auto_title || ''} ${p.farmer_district || ''} ${p.work_type || ''} ${p.crop || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
     if (filterTypes.length > 0 && filterTypes[0] !== 'all' && !filterTypes.includes(p.service_type)) return false;
     if (filterLocation) {
         if (!p.farmer_district.toLowerCase().includes(filterLocation.toLowerCase()) &&
@@ -1749,16 +1649,9 @@ function SupplierView({ user }) {
                 farmerProfile={farmerProfile}
                 onClose={() => setSelectedJob(null)} 
                 isApplied={true} 
+                onApply={() => handleApply(selectedJob.id)}
                 status={getApplicationStatus(selectedJob.id)} 
               />
-          </div>
-      )}
-      {(!selectedJob && window.innerWidth >= 768) && (
-          <div className="hidden md:flex flex-1 items-center justify-center bg-gray-50/30 border-l border-gray-200">
-             <div className="text-center w-full px-4">
-                 <div className="text-4xl mb-3 text-gray-300">📄</div>
-                 <p className="text-gray-400 text-sm font-medium">Select a job to view details</p>
-             </div>
           </div>
       )}
     </div>
@@ -1766,131 +1659,185 @@ function SupplierView({ user }) {
 }
 
 function JobCardSupplier({ job, isSelected, onClick, isApplied, onApply, workerLocation }) {
-    const isUrgent = job.urgency === 'urgent';
-    const postDate = new Date(job.created_at || Date.now());
-    const timeAgoMs = Date.now() - postDate.getTime();
-    const hoursAgo = Math.max(0, Math.floor(timeAgoMs / 3600000));
-    const timeStr = hoursAgo < 1 ? 'Just now' : hoursAgo < 24 ? `${hoursAgo} hours ago` : `${Math.floor(hoursAgo/24)} days ago`;
-    const icon = getJobIcon(job.service_type || job.type || job.category);
+  const isUrgent = job.urgency === 'urgent';
+  const postDate = new Date(job.created_at || Date.now());
+  const timeAgoMs = Date.now() - postDate.getTime();
+  const hoursAgo = Math.max(0, Math.floor(timeAgoMs / 3600000));
+  const timeStr = hoursAgo < 1 ? 'Just now' : hoursAgo < 24 ? `${hoursAgo} hours ago` : `${Math.floor(hoursAgo / 24)} days ago`;
+  const icon = getJobIcon(job.service_type || job.type || job.category);
 
-    return (
-        <div className={`bg-white rounded-xl p-4 cursor-pointer transition-colors border ${isSelected ? 'border-gray-400 bg-gray-50/50' : 'border-gray-200 hover:border-gray-300'} ${isApplied ? 'border-l-[3px] border-l-[#166534]' : ''}`}
-           onClick={onClick} style={{ borderWidth: isApplied ? '0.5px 0.5px 0.5px 3px' : '0.5px' }}>
-            <div className="flex justify-between items-start mb-2">
-                <div className="flex gap-3">
-                    <div className="w-[32px] h-[32px] rounded-md bg-gray-100 flex items-center justify-center text-lg">{icon}</div>
-                    <div>
-                        <h4 className="text-[15px] font-medium text-gray-900 leading-snug">{job.auto_title || job.title || 'Farm job'}</h4>
-                        {(job.work_type || job.crop) && (
-                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 2 }}>
-                            {job.work_type && <span style={{ fontSize: 10, background: '#e0f2fe', color: '#0369a1', borderRadius: 10, padding: '1px 7px', fontWeight: 500 }}>{job.work_type}</span>}
-                            {job.crop && <span style={{ fontSize: 10, background: '#f0fdf4', color: '#166534', borderRadius: 10, padding: '1px 7px', fontWeight: 500 }}>{job.crop}</span>}
-                          </div>
-                        )}
-                        <p className="text-[12px] text-gray-500">{getSafeName(job.farmer_name, false)} · {job.farmer_district}</p>
-                    </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                    <span className="text-[11px] text-gray-400">{timeStr}</span>
-                    {isUrgent && <span className="bg-[#FEE2E2] text-[#991B1B] text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm">Urgent</span>}
-                </div>
+  // Distance formatting
+  const dist = haversineDistanceKm(workerLocation?.lat, workerLocation?.lon, job.lat, job.lng);
+
+  return (
+    <div 
+      onClick={onClick}
+      style={{
+        background: '#fff',
+        borderRadius: 20,
+        padding: '20px',
+        marginBottom: 16,
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        border: `1.5px solid ${isSelected ? '#166534' : '#F1F5F9'}`,
+        boxShadow: isSelected ? '0 10px 25px -5px rgba(22, 101, 52, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+      className="group hover:shadow-xl hover:scale-[1.01]"
+    >
+      {isApplied && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, height: '100%', width: 4, background: '#166534'
+        }} />
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: 14 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 14,
+            background: '#F8FAFC', border: '1px solid #E2E8F0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 24, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+          }}>
+            {icon}
+          </div>
+          <div>
+            <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', marginBottom: 2 }}>
+              {job.auto_title || job.title || 'Farm Job'}
+            </h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#059669', opacity: 0.8 }}>
+                {getSafeName(job.farmer_name, false).toUpperCase()}
+              </span>
+              <span style={{ color: '#E2E8F0' }}>•</span>
+              <span style={{ fontSize: 12, fontWeight: 500, color: '#64748B' }}>
+                {job.farmer_district}
+              </span>
             </div>
-            <div className="flex flex-wrap gap-4 mt-3 mb-2">
-                <div className="text-[13px] text-gray-700 flex items-center gap-1.5">
-                  <span className="text-gray-400">📍</span>
-                  {(() => {
-                    const dist = haversineDistanceKm(
-                      workerLocation?.lat, workerLocation?.lon,
-                      job.lat, job.lng
-                    );
-                    return (
-                      <span>
-                        {job.farmer_district}
-                        {dist != null && (
-                          <span style={{
-                            marginLeft: 6, fontWeight: 500,
-                            color: dist <= 10 ? '#166534' : dist <= 30 ? '#92400e' : '#6B7280'
-                          }}>
-                            · {dist}km away
-                            {dist <= 10 && ' 🟢'}
-                            {dist > 10 && dist <= 30 && ' 🟡'}
-                            {dist > 30 && ' 🔴'}
-                          </span>
-                        )}
-                      </span>
-                    );
-                  })()}
-                </div>
-                <div className="text-[13px] text-gray-700 flex items-center gap-1.5"><span className="text-gray-400">📅</span> {new Date(job.scheduled_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                <div className="text-[13px] text-gray-700 flex items-center gap-1.5"><span className="text-gray-400">👥</span> {job.workers_needed || job.units || 1} needed</div>
-                <div className="text-[13px] text-gray-700 flex items-center gap-1.5 font-medium"><span className="text-gray-400">💰</span> {job.daily_rate || job.pay_rate || job.salary || job.wage ? `₹${job.daily_rate || job.pay_rate || job.salary || job.wage}/day` : 'Pay: Negotiable'}</div>
-            </div>
-            {job.description && (
-                <p className="text-[13px] text-gray-500 line-clamp-2 mt-2 leading-relaxed">
-                   {job.description} <span className="text-[#166534] hover:underline cursor-pointer">...read more</span>
-                </p>
-            )}
-            <div className="flex flex-wrap gap-1.5 mt-3">
-                {['Tractor driving', 'Heavy lifting'].map((s, i) => (
-                    <span key={i} className="px-2 py-0.5 border border-gray-200 text-gray-600 rounded-md text-[11px] bg-gray-50">{s}</span>
-                ))}
-            </div>
-            <div className="flex justify-between items-center border-t border-gray-100 pt-3 mt-3">
-                <div className="text-[12px] text-gray-500">⭐ 4.6 farmer</div>
-                <div className="flex gap-2">
-                    <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50" onClick={(e) => e.stopPropagation()}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                    </button>
-                    {isApplied ? (
-                        <button className="h-8 px-4 rounded-md border border-[#166534] text-[#166534] text-[13px] font-medium bg-green-50/50 cursor-default flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                            Applied ✓
-                        </button>
-                    ) : (
-                        <button className="h-8 px-4 rounded-md bg-[#166534] text-white text-[13px] font-medium hover:bg-green-800 transition-colors shadow-sm" onClick={(e) => { e.stopPropagation(); onApply(); }}>
-                            Apply Now
-                        </button>
-                    )}
-                </div>
-            </div>
+          </div>
         </div>
-    );
+        <div style={{ textAlign: 'right' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', display: 'block' }}>{timeStr}</span>
+          {isUrgent && (
+            <span style={{
+              marginTop: 4, display: 'inline-block',
+              background: '#FEF2F2', color: '#EF4444', 
+              fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 6,
+              textTransform: 'uppercase', letterSpacing: '0.05em'
+            }}>Urgent</span>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 24px', marginBottom: 16, borderTop: '1px solid #F8FAFC', paddingTop: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', fontWeight: 500 }}>
+          <span style={{ filter: 'grayscale(1)' }}>📍</span> 
+          {dist != null ? `${dist}km away` : job.farmer_district}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', fontWeight: 500 }}>
+          <span style={{ filter: 'grayscale(1)' }}>📅</span> {new Date(job.scheduled_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#059669', fontWeight: 700 }}>
+          <span style={{ filter: 'grayscale(1)' }}>💰</span> ₹{job.daily_rate || 500}/day
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <span style={{ fontSize: 11, background: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
+            {job.work_type || 'Farm Labor'}
+          </span>
+          <span style={{ fontSize: 11, background: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: 8, fontWeight: 600 }}>
+            {job.crop || 'Any Crop'}
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {isApplied ? (
+            <div style={{
+              padding: '10px 20px', borderRadius: 12, border: '1px solid #E2E8F0',
+              color: '#94A3B8', fontSize: 13, fontWeight: 700, display: 'flex', gap: 4
+            }}>
+              ✅ Applied
+            </div>
+          ) : (
+            <button
+              onClick={(e) => { e.stopPropagation(); onApply(); }}
+              style={{
+                background: '#166534', color: '#fff', border: 'none',
+                borderRadius: 12, padding: '10px 24px', fontSize: 13,
+                fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(22, 101, 52, 0.2)'
+              }}
+            >
+              Apply Now
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
+
 function AppliedJobCard({ app, onClick }) {
-    const job = app.job_posts || app.job || app;
-    const applicationStatus = (app.status || 'applied').toLowerCase();
-    const isSelected = ['selected', 'accepted', 'hired'].includes(applicationStatus);
-    
-    // Privacy labels
-    const displayPartner = getSafeName(job.farmer_name, isSelected);
-    const displayPlace = isSelected ? job.farmer_district : `${job.farmer_district} area`;
+  const job = app.job_posts || app.job || app;
+  const applicationStatus = (app.status || 'applied').toLowerCase();
+  const isSelected = ['selected', 'accepted', 'hired'].includes(applicationStatus);
+  const isRejected = applicationStatus === 'rejected';
 
-    const statusMap = {
-        'applied': { label: 'Pending', bg: 'bg-amber-100 text-amber-800 border-amber-200' },
-        'hired': { label: 'Selected', bg: 'bg-green-100 text-green-800 border-green-200' },
-        'selected': { label: 'Selected', bg: 'bg-green-100 text-green-800 border-green-200' },
-        'accepted': { label: 'Selected', bg: 'bg-green-100 text-green-800 border-green-200' },
-        'rejected': { label: 'Not selected', bg: 'bg-gray-100 text-gray-500 border-gray-200' },
-        'shortlisted': { label: 'Shortlisted', bg: 'bg-blue-100 text-blue-800 border-blue-200' }
-    };
-    const s = statusMap[applicationStatus] || statusMap['applied'];
+  const statusMap = {
+    'applied': { label: 'Pending', color: '#B45309', bg: '#FFFBEB', icon: '⏳' },
+    'hired': { label: 'Hired', color: '#166534', bg: '#F0FDF4', icon: '✅' },
+    'selected': { label: 'Hired', color: '#166534', bg: '#F0FDF4', icon: '✅' },
+    'rejected': { label: 'Not Selected', color: '#991B1B', bg: '#FEF2F2', icon: '❌' },
+  };
+  const s = statusMap[applicationStatus] || statusMap['applied'];
 
-    return (
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-3 w-full">
-            <div className="min-w-0 pr-4">
-                <h4 className="text-[15px] font-medium text-gray-900 leading-tight truncate">{job.title}</h4>
-                <p className="text-[12px] text-gray-500 mt-1 truncate">
-                    {displayPartner} · {displayPlace} · Applied on {new Date(app.created_at || Date.now()).toLocaleDateString()}
-                </p>
-            </div>
-            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto shrink-0">
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium border ${s.bg}`}>{s.label}</span>
-                <button onClick={onClick} className="text-[#166534] text-[13px] font-medium hover:underline px-3 py-1.5 border border-gray-200 rounded-md bg-white hover:bg-gray-50">
-                    View Job
-                </button>
-            </div>
+  return (
+    <div 
+      onClick={onClick}
+      style={{
+        background: '#fff',
+        borderRadius: 16,
+        padding: '16px',
+        marginBottom: 12,
+        cursor: 'pointer',
+        border: '1px solid #F1F5F9',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        transition: 'all 0.2s ease'
+      }}
+      className="hover:border-slate-300 hover:shadow-md"
+    >
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12,
+          background: s.bg, display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: 18
+        }}>
+          {getJobIcon(job.service_type)}
         </div>
-    );
+        <div>
+          <h4 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 2 }}>{job.title || job.auto_title}</h4>
+          <p style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>
+            {app.farmer_name || 'Farmer'} • Applied {new Date(app.applied_at || app.created_at).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{
+          fontSize: 11, fontWeight: 800, color: s.color,
+          background: s.bg, padding: '4px 10px', borderRadius: 8,
+          textTransform: 'uppercase', letterSpacing: '0.04em'
+        }}>
+          {s.icon} {s.label}
+        </span>
+        <div style={{ color: '#CBD5E1' }}>→</div>
+      </div>
+    </div>
+  );
 }
 
 function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfile }) {
@@ -1959,14 +1906,14 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
                         justifyContent: 'center',
                         fontSize: 16, fontWeight: 600, flexShrink: 0
                       }}>
-                        {getSafeName(farmerProfile?.name || job.farmer_name, isSelected).charAt(0).toUpperCase()}
+                        {getSafeName(farmerProfile?.full_name || farmerProfile?.name || job.farmer_name, isSelected).charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div style={{
                           fontSize: 14, fontWeight: 500,
                           color: 'var(--color-text-primary, #0f172a)'
                         }}>
-                          {getSafeName(farmerProfile?.name || job.farmer_name, isSelected)}
+                          {getSafeName(farmerProfile?.full_name || farmerProfile?.name || job.farmer_name, isSelected)}
                         </div>
                         <div style={{
                           fontSize: 12, color: 'var(--color-text-secondary, #64748b)'
@@ -2175,143 +2122,4 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
             </div>
         </div>
     );
-}
-
-
-// ─── SUPPLIER REGISTRATION FORM ──────────────────────────────────────────────
-
-function SupplierRegistrationForm({ user, onComplete }) {
-  const [step, setStep] = useState(1);
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    full_name: user?.full_name || '',
-    phone: '',
-    whatsapp: '',
-    same_as_phone: false,
-    district: 'Annamayya',
-    state: 'Andhra Pradesh',
-    service_type: 'worker',
-    skills: [],
-    daily_rate: '',
-    experience: '',
-    bio: ''
-  });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const res = await fetch(`${API_BASE}/supplier/register/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          user_id: user.id,
-          whatsapp: formData.same_as_phone ? formData.phone : formData.whatsapp
-        })
-      });
-      if (res.ok) setStep(3); // Show success screen
-    } catch (err) {
-      alert('Error submitting registration');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (step === 3) return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-      <div className="text-8xl mb-6">✅</div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration submitted!</h2>
-      <p className="text-gray-500 mb-8">Your profile is pending admin approval. You can start browsing jobs shortly.</p>
-      <button onClick={() => window.location.href = '/'} className="w-full max-w-xs bg-green-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg">
-        Go to Home
-      </button>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-white p-6 pb-20 overflow-y-auto">
-      <div className="max-w-md mx-auto">
-        <h2 className="text-2xl font-black text-gray-900 mb-2">Complete Profile</h2>
-        <p className="text-gray-500 mb-8">Tell us about your services</p>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input type="text" placeholder="Full Name (As per Aadhar)" required
-            className="w-full h-14 px-4 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all text-slate-900 font-medium placeholder:text-slate-400"
-            value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
-
-          <input type="tel" placeholder="Phone Number (+91)" required
-            className="w-full h-14 px-4 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-green-500 outline-none text-slate-900 font-medium placeholder:text-slate-400"
-            value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
-
-          <div className="flex items-center gap-2 px-1">
-            <input type="checkbox" id="whatsapp-check" checked={formData.same_as_phone}
-              onChange={e => setFormData({...formData, same_as_phone: e.target.checked})} />
-            <label htmlFor="whatsapp-check" className="text-sm font-medium text-gray-600">WhatsApp same as phone</label>
-          </div>
-
-          {!formData.same_as_phone && (
-            <input type="tel" placeholder="WhatsApp Number"
-              className="w-full h-14 px-4 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-green-500 outline-none text-slate-900 font-medium placeholder:text-slate-400"
-              value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} />
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <select className="h-14 px-4 rounded-xl border border-gray-200 bg-white outline-none text-slate-900 font-medium"
-              value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} required>
-              <option value="">Select District</option>
-              {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <input type="text" value="Andhra Pradesh" disabled className="h-14 px-4 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 font-bold" />
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-sm font-bold text-gray-700">Service Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {SERVICES.map(s => (
-                <button type="button" key={s.id} onClick={() => setFormData({...formData, service_type: s.id})}
-                  className={`py-3 rounded-xl border font-black transition-all ${formData.service_type === s.id ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-100' : 'bg-white text-gray-500 border-gray-200 hover:border-green-300'}`}>
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {formData.service_type === 'worker' && (
-            <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-700">Skills</label>
-              <div className="flex flex-wrap gap-2">
-                {SKILLS.map(s => (
-                  <button type="button" key={s} onClick={() => {
-                    const exists = formData.skills.includes(s);
-                    setFormData({...formData, skills: exists ? formData.skills.filter(i => i !== s) : [...formData.skills, s]});
-                  }} className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${formData.skills.includes(s) ? 'bg-green-100 border-green-600 text-green-700' : 'bg-white border-gray-200 text-gray-500'}`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <input type="number" placeholder="Daily Rate (₹)" required
-              className="h-14 px-4 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-green-500 outline-none text-slate-900 font-medium placeholder:text-slate-400"
-              value={formData.daily_rate} onChange={e => setFormData({...formData, daily_rate: e.target.value})} />
-            <input type="number" placeholder="Exp. (Years)"
-              className="h-14 px-4 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-green-500 outline-none text-slate-900 font-medium placeholder:text-slate-400"
-              value={formData.experience} onChange={e => setFormData({...formData, experience: e.target.value})} />
-          </div>
-
-          <textarea placeholder="Tell farmers about your experience (Optional)"
-            className="w-full h-24 p-4 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-green-500 outline-none text-slate-900 font-medium placeholder:text-slate-400"
-            value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
-
-          <button type="submit" disabled={submitting}
-            className="w-full h-16 bg-green-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-green-100 flex items-center justify-center gap-2">
-            {submitting ? 'Submitting...' : 'Register as Supplier ✓'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
 }

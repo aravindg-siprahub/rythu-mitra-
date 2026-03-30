@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import GlassCard from "../components/ui/GlassCard";
 import Button from "../components/ui/Button";
@@ -28,87 +28,6 @@ function useRmRole() {
   }, [location.pathname]);
 
   return role;
-}
-
-function SupplierWorkHub() {
-  const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-[#0b1220] text-white">
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-blue-200">
-            Worker / provider
-          </div>
-          <h1 className="mt-2 text-3xl font-black tracking-tight">Provider hub</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
-            This tab is for people offering labor, transport, or equipment. Browse open jobs from farmers and track your
-            applications — not the same screen as booking a service for your own farm.
-          </p>
-
-          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-3 space-y-6">
-              <GlassCard className="bg-white/5">
-                <div className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Find work</div>
-                <div className="mt-2 text-lg font-black">Open jobs near you</div>
-                <p className="mt-2 text-sm text-slate-400">
-                  Posting, applying, and hire flow live in the Work module.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Button
-                    variant="gradient"
-                    size="md"
-                    type="button"
-                    onClick={() => navigate("/work")}
-                  >
-                    Go to Work →
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/dashboard")}
-                    className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-slate-200 hover:bg-white/10"
-                  >
-                    Home
-                  </button>
-                </div>
-              </GlassCard>
-
-              <GlassCard className="bg-white/5">
-                <div className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Service bookings</div>
-                <div className="mt-2 text-lg font-black">Incoming requests</div>
-                <p className="mt-2 text-sm text-slate-400">
-                  When a farmer books your service through the platform, confirmations will appear here. (Backend wiring
-                  pending.)
-                </p>
-                <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-6 text-center text-sm text-slate-400">
-                  No incoming service bookings yet.
-                </div>
-              </GlassCard>
-            </div>
-
-            <div className="lg:col-span-2">
-              <GlassCard className="bg-white/5">
-                <div className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Why this looks different</div>
-                <div className="mt-3 space-y-3 text-sm text-slate-300">
-                  <p>
-                    <span className="font-bold text-white">Farmers</span> use Booking to request equipment, experts, or
-                    supplies.
-                  </p>
-                  <p>
-                    <span className="font-bold text-white">Workers</span> use Work to find jobs and manage applications.
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Need the farmer booking form? Log out and sign in as Farmer, or switch role on the role selection
-                    screen after login.
-                  </p>
-                </div>
-              </GlassCard>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </div>
-  );
 }
 
 const TABS = [
@@ -482,7 +401,7 @@ function FarmerBookingRequestPage() {
 export default function BookingSystem() {
   const role = useRmRole();
   if (isSupplierRole(role)) {
-    return <SupplierWorkHub />;
+    return <Navigate to="/work" replace />;
   }
   return <FarmerBookingRequestPage />;
 }

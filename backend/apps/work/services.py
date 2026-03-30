@@ -4,6 +4,18 @@ from supabase import create_client  # type: ignore
 def get_supabase():
     return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
+# Worker-facing listings: never expose farmer phone until hire (UI also gates; API must not leak).
+_HIRED_APPLICATION_STATUSES = frozenset({"hired", "selected", "accepted"})
+
+
+def _strip_farmer_phone_from_post_dict(p: dict) -> dict:
+    if not p:
+        return p
+    out = dict(p)
+    out.pop("farmer_phone", None)
+    return out
+
+
 def get_job_feed(service_type="all", district=None, search_query=None, limit=30, offset=0):
     """Get all open job posts, newest first. Filter by district if provided."""
     supabase = get_supabase()
@@ -18,10 +30,12 @@ def get_job_feed(service_type="all", district=None, search_query=None, limit=30,
         query = query.ilike("title", f"%{search_query}%")
     result = query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
     posts = result.data or []
+    out = []
     for p in posts:
         apps = p.get("job_applications", [])
         p["job_applications_count"] = apps[0].get("count", 0) if apps else 0
-    return posts
+        out.append(_strip_farmer_phone_from_post_dict(p))
+    return out
 
 def create_job_post(data: dict) -> dict:
     """Farmer creates a job post."""
@@ -37,6 +51,7 @@ def create_job_post(data: dict) -> dict:
         "title", "description", "service_type", "scheduled_date",
         "duration", "daily_rate", "urgency",
         "workers_needed", "tractors_needed", "transport_needed", "sprayers_needed",
+        "work_type", "crop", "units",
     ] if data.get(k) is not None}
     payload.setdefault("urgency", "normal")
     payload.setdefault("status", "open")
@@ -103,12 +118,42 @@ def get_supplier_applications(supplier_profile_id: str) -> list:
     result = supabase.table("job_applications").select(
         "*, job_posts(title, farmer_name, farmer_phone, farmer_district, scheduled_date, status, urgency)"
     ).eq("supplier_id", supplier_profile_id).order("applied_at", desc=True).execute()
-    return result.data or []
+    rows = result.data or []
+    for row in rows:
+        jp = row.get("job_posts")
+        if not isinstance(jp, dict):
+            continue
+        st = (row.get("status") or "").lower()
+        if st not in _HIRED_APPLICATION_STATUSES:
+            row["job_posts"] = _strip_farmer_phone_from_post_dict(jp)
+    return rows
 
 def close_job_post(job_post_id: str, farmer_id: str) -> dict:
     supabase = get_supabase()
     result = supabase.table("job_posts").update({"status": "filled"}).eq("id", job_post_id).eq("farmer_id", farmer_id).execute()
     return result.data[0]
+
+
+def update_job_post_status(job_post_id: str, farmer_id: str, status: str) -> dict:
+    """Farmer opens or closes a job post. Use status: open | closed | filled (filled is legacy, same as closed for feed)."""
+    allowed = {"open", "closed", "filled"}
+    if status not in allowed:
+        raise ValueError("Invalid status")
+    supabase = get_supabase()
+    post = supabase.table("job_posts").select("farmer_id").eq("id", job_post_id).single().execute()
+    if not post.data or post.data["farmer_id"] != farmer_id:
+        raise PermissionError("Not your job post")
+    result = (
+        supabase.table("job_posts")
+        .update({"status": status})
+        .eq("id", job_post_id)
+        .eq("farmer_id", farmer_id)
+        .execute()
+    )
+    rows = result.data or []
+    if not rows:
+        raise ValueError("Update failed")
+    return rows[0]
 
 def get_supplier_profile(user_id: str) -> dict | None:
     supabase = get_supabase()

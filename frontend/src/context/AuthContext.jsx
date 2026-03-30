@@ -5,6 +5,7 @@ import React, {
     useEffect
 } from 'react';
 import { supabase } from '../config/supabaseClient';
+import { hydrateLaborRoleFromProfile } from '../utils/mapSupabaseUser';
 
 const AuthContext = createContext(null);
 
@@ -25,23 +26,38 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         let isMounted = true;
 
+        // Safety fallback: never stay loading for more than 5 seconds
+        const safetyTimer = setTimeout(() => {
+            if (isMounted) setLoading(false);
+        }, 5000);
+
         const init = async () => {
             try {
                 const { data, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError) throw sessionError;
                 if (!isMounted) return;
-                setUser(data?.session?.user ?? null);
+
+                const sessionUser = data?.session?.user ?? null;
+                if (sessionUser?.id) {
+                    // Hydrate role on page load — non-blocking, don't await
+                    hydrateLaborRoleFromProfile(supabase, sessionUser.id).catch(() => {});
+                }
+                setUser(sessionUser);
                 syncApiTokensFromSession(data?.session ?? null);
             } catch (e) {
                 if (!isMounted) return;
                 setUser(null);
                 syncApiTokensFromSession(null);
             } finally {
+                clearTimeout(safetyTimer);
                 if (!isMounted) return;
                 setLoading(false);
             }
         };
 
+        // onAuthStateChange: SYNCHRONOUS only — NO awaiting DB calls here.
+        // This fires immediately after signInWithPassword resolves.
+        // Role hydration happens non-blocking in login() and init() only.
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
             if (!isMounted) return;
             setUser(session?.user ?? null);
@@ -53,6 +69,7 @@ export function AuthProvider({ children }) {
 
         return () => {
             isMounted = false;
+            clearTimeout(safetyTimer);
             authListener?.subscription?.unsubscribe?.();
         };
     }, []);
@@ -70,6 +87,11 @@ export function AuthProvider({ children }) {
                 const msg = authError.message || 'Login failed. Check your credentials.';
                 setError(msg);
                 return { success: false, error: msg };
+            }
+
+            // Hydrate role after successful login — non-blocking, fire and forget
+            if (data?.user?.id) {
+                hydrateLaborRoleFromProfile(supabase, data.user.id).catch(() => {});
             }
 
             syncApiTokensFromSession(data?.session ?? null);

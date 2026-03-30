@@ -408,7 +408,14 @@ export default function FarmerHomeScreen({
     });
 
     // Soft user fields — user object from localStorage (field names are backend-driven)
-    const farmerName = user?.name || user?.full_name || user?.first_name || user?.username || 'Farmer';
+    const farmerName =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.name ||
+        user?.full_name ||
+        user?.first_name ||
+        user?.username ||
+        'Farmer';
     const district   = user?.district || user?.location || 'Andhra Pradesh';
 
     useEffect(() => {

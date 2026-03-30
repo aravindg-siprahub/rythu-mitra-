@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 @pytest.fixture
 def mock_sb():
@@ -33,3 +33,24 @@ def test_get_supplier_profile_none(mock_sb):
     from apps.work.services import get_supplier_profile
     result = get_supplier_profile("unknown-user")
     assert result is None
+
+
+def test_update_job_post_status_success(mock_sb):
+    mock_sb.table.return_value.select.return_value.eq.return_value.single.return_value.execute.return_value.data = {
+        "farmer_id": "f1",
+    }
+    mock_sb.table.return_value.update.return_value.eq.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "j1", "status": "closed"}
+    ]
+    from apps.work.services import update_job_post_status
+    row = update_job_post_status("j1", "f1", "closed")
+    assert row["status"] == "closed"
+
+
+def test_update_job_post_status_permission(mock_sb):
+    mock_sb.table.return_value.select.return_value.eq.return_value.single.return_value.execute.return_value.data = {
+        "farmer_id": "other",
+    }
+    from apps.work.services import update_job_post_status
+    with pytest.raises(PermissionError):
+        update_job_post_status("j1", "f1", "open")

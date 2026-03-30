@@ -32,10 +32,10 @@ export default function DashboardHeader({ onMenuClick, owWeather, displayLocatio
                 // Try job_applications status changes first (selection events)
                 const { data: apps } = await supabase
                     .from('job_applications')
-                    .select('id, status, created_at, job_post_id')
+                    .select('id, status, applied_at, job_post_id')
                     .eq('supplier_id', user.id)
                     .in('status', ['hired', 'rejected'])
-                    .order('created_at', { ascending: false })
+                    .order('applied_at', { ascending: false })
                     .limit(10);
 
                 if (apps && apps.length > 0) {
@@ -46,7 +46,7 @@ export default function DashboardHeader({ onMenuClick, owWeather, displayLocatio
                             : `You have been selected for a job!`,
                         subtitle: '',
                         type: a.status === 'hired' ? 'success' : 'info',
-                        time: a.created_at,
+                        time: a.applied_at,
                     }));
                     setNotifications(notifs);
                     setUnreadCount(notifs.length);

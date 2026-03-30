@@ -1,12 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  }
-});
+/**
+ * Single Supabase browser client — re-export so we never create two GoTrueClient instances.
+ * Always import from here OR from `config/supabaseClient` (same instance).
+ */
+export { supabase } from '../config/supabaseClient';

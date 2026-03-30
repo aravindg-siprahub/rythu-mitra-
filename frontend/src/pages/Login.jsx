@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../config/supabaseClient';
+import {
+    mapSupabaseUserToAppUser,
+    persistAppUserSnapshot,
+    getHomePathForRole,
+} from '../utils/mapSupabaseUser';
+
 
 export default function Login() {
     const navigate = useNavigate();
@@ -25,9 +30,15 @@ export default function Login() {
         setSubmitting(false);
 
         if (result.success) {
-            // Always ask role after login so users can choose current workflow.
-            localStorage.removeItem('rm_role');
-            navigate('/select-role', { replace: true });
+            if (result.user) {
+                const appUser = mapSupabaseUserToAppUser(result.user);
+                persistAppUserSnapshot(appUser);
+                // Note: hydrateLaborRoleFromProfile is already fired non-blocking inside AuthContext.login()
+                // Give it a small moment to write to localStorage before we read it
+                await new Promise(r => setTimeout(r, 200));
+            }
+            const role = localStorage.getItem('rm_role');
+            navigate(getHomePathForRole(role || ''), { replace: true });
         } else {
             setError(result.error || 'Login failed. Check your credentials.');
         }

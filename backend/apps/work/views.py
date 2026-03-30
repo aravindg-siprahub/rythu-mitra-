@@ -7,8 +7,20 @@ from .services import (
     get_job_feed, create_job_post, apply_to_job,
     get_job_applicants, get_farmer_posts, get_supplier_applications,
     close_job_post, get_supplier_profile, register_supplier, submit_rating,
-    update_application_status
+    update_application_status, update_job_post_status,
 )
+
+
+def _ok(data=None, message="", status=200):
+    payload = {"success": True, "message": message, "data": data if data is not None else {}, "errors": {}}
+    return JsonResponse(payload, status=status)
+
+
+def _err(message, status=400, errors=None):
+    return JsonResponse(
+        {"success": False, "message": message, "data": {}, "errors": errors or {}},
+        status=status,
+    )
 
 @method_decorator(csrf_exempt, name='dispatch')
 class JobFeedView(View):
@@ -18,7 +30,7 @@ class JobFeedView(View):
         search = request.GET.get("q", None)
         offset = int(request.GET.get("offset", 0))
         posts = get_job_feed(service_type, district, search, offset=offset)
-        return JsonResponse({"posts": posts})
+        return _ok({"posts": posts})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateJobView(View):
@@ -26,14 +38,11 @@ class CreateJobView(View):
         try:
             data = json.loads(request.body)
             post = create_job_post(data)
-            return JsonResponse({"post": post}, status=201)
+            return _ok({"post": post}, message="Created", status=201)
         except Exception as e:
             import traceback
             traceback.print_exc()  # prints full error to terminal
-            return JsonResponse(
-                {'error': str(e), 'success': False}, 
-                status=400
-            )
+            return _err(str(e), status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ApplyJobView(View):
@@ -41,9 +50,9 @@ class ApplyJobView(View):
         data = json.loads(request.body)
         try:
             app = apply_to_job(job_id, data["supplier_profile_id"], data.get("cover_note", ""))
-            return JsonResponse({"application": app}, status=201)
+            return _ok({"application": app}, message="Applied", status=201)
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            return _err(str(e), status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ApplicantsView(View):
@@ -58,12 +67,12 @@ class ApplicantsView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class FarmerPostsView(View):
     def get(self, request, farmer_id):
-        return JsonResponse({"posts": get_farmer_posts(farmer_id)})
+        return _ok({"posts": get_farmer_posts(farmer_id)})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SupplierApplicationsView(View):
     def get(self, request, supplier_id):
-        return JsonResponse({"applications": get_supplier_applications(supplier_id)})
+        return _ok({"applications": get_supplier_applications(supplier_id)})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CloseJobView(View):
@@ -76,7 +85,7 @@ class CloseJobView(View):
 class SupplierProfileView(View):
     def get(self, request, user_id):
         profile = get_supplier_profile(user_id)
-        return JsonResponse({"supplier": profile})
+        return _ok({"supplier": profile})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SupplierRegisterView(View):
@@ -84,9 +93,9 @@ class SupplierRegisterView(View):
         data = json.loads(request.body)
         try:
             supplier = register_supplier(data)
-            return JsonResponse({"supplier": supplier}, status=201)
+            return _ok({"supplier": supplier}, message="Registered", status=201)
         except ValueError as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            return _err(str(e), status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RatingView(View):
@@ -98,9 +107,9 @@ class RatingView(View):
                 data["supplier_id"], data["rating"],
                 data.get("review", "")
             )
-            return JsonResponse({"rating": result}, status=201)
+            return _ok({"rating": result}, message="Rated", status=201)
         except ValueError as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            return _err(str(e), status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UpdateApplicationStatusView(View):
@@ -108,10 +117,29 @@ class UpdateApplicationStatusView(View):
         data = json.loads(request.body)
         try:
             app = update_application_status(
-                application_id, 
-                data["farmer_id"], 
-                data["status"]
+                application_id,
+                data["farmer_id"],
+                data["status"],
             )
-            return JsonResponse({"application": app})
+            return _ok({"application": app}, message="Updated")
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            return _err(str(e), status=400)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class JobPostStatusView(View):
+    """Farmer updates the status of their own job post (open / closed / filled)."""
+    def post(self, request, job_id):
+        data = json.loads(request.body)
+        try:
+            post = update_job_post_status(
+                job_id,
+                data["farmer_id"],
+                data["status"],
+            )
+            return _ok({"post": post}, message="Status updated")
+        except PermissionError as e:
+            return _err(str(e), status=403)
+        except ValueError as e:
+            return _err(str(e), status=400)
+        except Exception as e:
+            return _err(str(e), status=500)

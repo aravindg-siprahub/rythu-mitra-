@@ -6,6 +6,7 @@ urlpatterns = [
     path("create/", views.CreateJobView.as_view()),
     path("<str:job_id>/apply/", views.ApplyJobView.as_view()),
     path("<str:job_id>/applicants/", views.ApplicantsView.as_view()),
+    path("<str:job_id>/status/", views.JobPostStatusView.as_view()),
     path("<str:job_id>/close/", views.CloseJobView.as_view()),
     path("farmer/<str:farmer_id>/posts/", views.FarmerPostsView.as_view()),
     path("supplier/<str:supplier_id>/applications/", views.SupplierApplicationsView.as_view()),

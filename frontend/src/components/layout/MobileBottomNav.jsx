@@ -8,7 +8,7 @@ const NAV_ITEMS = [
     { icon: '🔬', label: 'Disease', path: '/disease' },
     { icon: '📈', label: 'Market', path: '/market' },
     { icon: '☁️', label: 'Weather', path: '/weather' },
-    { icon: '📋', label: 'Booking', path: '/booking' },
+    { icon: '📋', label: 'Work', path: '/work' },
     { icon: '👤', label: 'Profile', path: '/profile' }
 ];
 

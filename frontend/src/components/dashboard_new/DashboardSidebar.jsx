@@ -19,7 +19,7 @@ const NAV_SECTIONS = [
     {
         label: 'Services',
         items: [
-            { emoji: '📋', label: 'Booking System', path: '/booking', desc: 'Equipment, experts, supplies' },
+            { emoji: '📋', label: 'Labor Market', path: '/work', desc: 'Workers, tractors, transport' },
         ],
     },
     {

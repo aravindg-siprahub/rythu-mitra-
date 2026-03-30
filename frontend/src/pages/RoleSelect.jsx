@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../config/supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { mapSupabaseUserToAppUser, persistAppUserSnapshot } from '../utils/mapSupabaseUser';
 
 export default function RoleSelect() {
   const navigate = useNavigate();
@@ -24,32 +25,13 @@ export default function RoleSelect() {
   const handleSelect = async (role) => {
     if (!user) return;
     setLoading(true);
+    setError(null);
 
     try {
-      // 1. Fetch metadata from Auth as fallback (in case profile is missing)
       const { data: authData } = await supabase.auth.getUser();
-      const metadata = authData?.user?.user_metadata || {};
-      
-      // 2. Prepare profile data
-      const profileData = {
-        id: user.id,
-        role: role,
-        user_role: role,
-        updated_at: new Date().toISOString()
-      };
+      const sessionUser = authData?.user;
+      const metadata = sessionUser?.user_metadata || {};
 
-      // If user profile is missing some required fields, satisfy them from metadata or defaults
-      if (!user.profile?.full_name) {
-        profileData.full_name = user.full_name || metadata.full_name || 'User';
-      }
-      if (!user.profile?.state) {
-        profileData.state = 'Andhra Pradesh';
-      }
-      if (!user.profile?.district) {
-        profileData.district = 'Chittoor';
-      }
-
-      // Fix 1 — Validate session before saving; refresh if expired
       let { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
       if (!session || sessionError) {
@@ -61,25 +43,55 @@ export default function RoleSelect() {
         session = refreshData.session;
       }
 
-      // 3. Save to Supabase profiles table
+      const uid = session.user.id;
+      const email = session.user.email || '';
+      const displayName =
+        metadata.full_name ||
+        metadata.name ||
+        user.user_metadata?.full_name ||
+        email.split('@')[0] ||
+        'User';
+
+      // Some DB checks only allow role ∈ { farmer, worker, reg_user }; keep fine-grained choice in user_role.
+      const roleForColumn = role === 'supplier' ? 'worker' : role;
+
+      const profileData = {
+        id: uid,
+        full_name: displayName,
+        username: (metadata.username || email.split('@')[0] || 'user').toLowerCase().slice(0, 48),
+        role: roleForColumn,
+        user_role: role,
+        state: metadata.state || 'Andhra Pradesh',
+        district: metadata.district || 'Chittoor',
+        updated_at: new Date().toISOString(),
+      };
+
       const { error } = await supabase
         .from('profiles')
-        .upsert({ ...profileData, id: session.user.id });
+        .upsert(profileData, { onConflict: 'id' });
 
       if (error) throw error;
 
-      // 2. Cache in localStorage
+      const appUser = mapSupabaseUserToAppUser(session.user);
+      if (appUser) {
+        appUser.profile = { ...appUser.profile, user_role: role };
+        persistAppUserSnapshot(appUser);
+      }
+
       localStorage.setItem('rm_role', role);
 
-      // 3. Navigate based on role
-      if (role === 'supplier') {
-        navigate('/booking', { replace: true });
+      if (role === 'supplier' || role === 'worker') {
+        navigate('/work', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
     } catch (err) {
+      const msg =
+        err?.message ||
+        err?.error_description ||
+        (typeof err === 'object' ? JSON.stringify(err) : String(err));
       console.error('Error saving role:', err);
-      setError('Unable to save your role. Please log in again.');
+      setError(msg || 'Unable to save your role. Try again or check your connection.');
     } finally {
       setLoading(false);
     }
@@ -123,7 +135,27 @@ export default function RoleSelect() {
           </div>
         </div>
 
-        {/* Supplier Card */}
+        {/* Worker (explicit DB role) */}
+        <div onClick={() => !loading && handleSelect('worker')} style={{
+          background: '#fff', border: '2px solid #E0E0E0',
+          borderRadius: 16, padding: 24, marginBottom: 16,
+          cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', 
+          alignItems: 'center', gap: 20, transition: 'all 0.2s'
+        }}
+        onMouseEnter={e => !loading && (e.currentTarget.style.borderColor = '#1565C0')}
+        onMouseLeave={e => !loading && (e.currentTarget.style.borderColor = '#E0E0E0')}>
+          <span style={{ fontSize: 48 }}>🧑‍🌾</span>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#1565C0' }}>
+              Farm worker
+            </div>
+            <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+              Find daily wage work, apply, get hired
+            </div>
+          </div>
+        </div>
+
+        {/* Supplier / vehicle owner */}
         <div onClick={() => !loading && handleSelect('supplier')} style={{
           background: '#fff', border: '2px solid #E0E0E0',
           borderRadius: 16, padding: 24, marginBottom: 16,
