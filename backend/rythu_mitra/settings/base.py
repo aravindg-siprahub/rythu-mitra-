@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_celery_results',
     # Our apps
-    'apps.core',
+    'apps.core.apps.CoreConfig',
     'apps.auth_app',
     'apps.crop',
     'apps.disease',
@@ -88,10 +88,14 @@ DATABASES = {
 }
 
 # ─── CACHE (for django-ratelimit and celery results) ──────────────────────────
+_REDIS_BASE = env('REDIS_URL', env('CELERY_BROKER_URL', 'redis://localhost:6379'))
+# Strip trailing /0 db index from REDIS_URL so we can append /1 for cache
+_REDIS_BASE_STRIPPED = _REDIS_BASE.rsplit('/', 1)[0] if _REDIS_BASE.endswith('/0') else _REDIS_BASE
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',
+        'LOCATION': f'{_REDIS_BASE_STRIPPED}/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }

@@ -1,0 +1,39 @@
+services:
+  # ─── Django + Celery + Redis Web Service ─────────────────────────
+  - type: web
+    name: rythu-mitra-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    plan: free
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: rythu_mitra.settings.base
+      - key: DEBUG
+        value: "False"
+      - key: REDIS_URL
+        value: redis://localhost:6379/0
+      - key: CELERY_BROKER_URL
+        value: redis://localhost:6379/0
+      - key: CELERY_RESULT_BACKEND
+        value: redis://localhost:6379/1
+      - key: ALLOWED_HOSTS
+        value: "*"
+      # ── Set these in Render Dashboard (secrets) ──────────────────
+      - key: SECRET_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false

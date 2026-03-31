@@ -1,53 +1,51 @@
-const AGMARKNET_BASE = 
-  'https://api.data.gov.in/resource/' +
-  '9ef84268-d588-465a-a308-a864a43d0070';
-const DATA_GOV_KEY = 
-  '579b464db66ec23bdd000001' +
-  'cdd3497f5ce9477d75b26c6d' +
-  '0d539e3';
-export async function fetchMandiPrice(
-  commodity, 
-  district
-) {
+/**
+ * mandiPrices.js
+ * Fetches live mandi prices via our Django backend (/api/v1/market/mandi-price/).
+ * No more allorigins.win CORS proxy — backend calls api.data.gov.in directly.
+ */
+import apiService from '../services/apiService';
+
+/**
+ * Fetch live mandi price for a commodity + district.
+ * @param {string} commodity  e.g. "Wheat", "Chickpea"
+ * @param {string} district   e.g. "Kurnool", "Warangal"
+ * @returns {object|null}     Price data or null on failure
+ */
+export async function fetchMandiPrice(commodity, district) {
   if (!commodity || !district) return null;
+
   try {
-    const params = new URLSearchParams({
-      'api-key':  DATA_GOV_KEY,
-      format:     'json',
-      limit:      '5',
-      'filters[commodity]': commodity,
-      'filters[district]':  district,
-    });
-    const targetUrl = `${AGMARKNET_BASE}?${params}`;
-    const res = await fetch(
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+    const res = await apiService.get(
+      `/market/mandi-price/?commodity=${encodeURIComponent(commodity)}&district=${encodeURIComponent(district)}`
     );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const records = data.records || [];
-    if (!records.length) return null;
-    // Get most recent price
-    const latest = records.sort((a, b) => 
-      new Date(b.arrival_date) - 
-      new Date(a.arrival_date)
-    )[0];
+    const data = res;
+
+    // No records found for this combination
+    if (!data || (data.records && data.records.length === 0)) return null;
+
     return {
-      minPrice:    parseFloat(latest.min_price  || 0),
-      maxPrice:    parseFloat(latest.max_price  || 0),
-      modalPrice:  parseFloat(latest.modal_price|| 0),
-      market:      latest.market,
-      district:    latest.district,
-      date:        latest.arrival_date,
-      commodity:   latest.commodity,
+      minPrice:   data.minPrice   ?? 0,
+      maxPrice:   data.maxPrice   ?? 0,
+      modalPrice: data.modalPrice ?? 0,
+      market:     data.market     ?? '',
+      district:   data.district   ?? district,
+      date:       data.date       ?? '',
+      commodity:  data.commodity  ?? commodity,
     };
-  } catch {
+  } catch (err) {
+    console.warn('[mandiPrices] Failed to fetch mandi price:', err?.response?.data || err.message);
     return null;
   }
 }
+
+/**
+ * Format mandi price for display.
+ * @param {object|null} priceData
+ * @returns {string|null}
+ */
 export function formatMandiPrice(priceData) {
   if (!priceData) return null;
   const min = Math.round(priceData.minPrice);
   const max = Math.round(priceData.maxPrice);
-  return `₹${min.toLocaleString('en-IN')}` +
-         ` - ₹${max.toLocaleString('en-IN')}/qtl`;
+  return `₹${min.toLocaleString('en-IN')} - ₹${max.toLocaleString('en-IN')}/qtl`;
 }

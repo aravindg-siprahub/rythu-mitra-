@@ -6,5 +6,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('prices/', views.market_prices, name='market_prices'),
+    path('prices/',      views.market_prices, name='market_prices'),
+    path('mandi-price/', views.mandi_price,   name='mandi_price'),
 ]

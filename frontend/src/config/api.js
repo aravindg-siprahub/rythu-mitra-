@@ -25,6 +25,8 @@ export const API_ENDPOINTS = {
     // ── Market / Prices (Django: /api/v1/ai/market-predict/) ────────────────
     marketForecast:  '/ai/market-predict/',
     mandiPrices:     '/market/prices/',
+    mandiPrice:      '/market/mandi-price/',   // live api.data.gov.in via backend
+
 
     // ── Weather (Django: /api/v1/ai/weather-forecast/) ──────────────────────
     weatherForecast: '/ai/weather-forecast/',
