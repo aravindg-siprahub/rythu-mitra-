@@ -109,7 +109,7 @@ export default function Settings() {
                     onClick={() => navigate(-1)}
                     style={{
                         background: '#f3f4f6', border: 'none', borderRadius: 8,
-                        width: 36, height: 36, cursor: 'pointer', fontSize: 16,
+                        width: 44, height: 44, cursor: 'pointer', fontSize: 16,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                 >

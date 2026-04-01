@@ -448,7 +448,7 @@ def ai_advisories(request):
                 'category': p.prediction_type,
                 'text': (p.result or {}).get('advisory_summary')
                      or (p.result or {}).get('soil_health_summary')
-                     or 'AI advisory',
+                     or '',
                 'location': 'India',
                 'time': str(p.created_at)[:10],
                 'confidence': 90,

@@ -17,41 +17,29 @@ export default function MobileBottomNav() {
     const location = useLocation();
 
     return (
-        <div style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-            background: 'var(--surface, #ffffff)', borderTop: '1px solid var(--border, #e5e7eb)',
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.08)', height: 64,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch'
-        }} className="md:hidden"> {/* Only show on md:hidden (mobile) or adjust based on design. Currently visible globally on mobile */}
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 min-h-[64px] flex items-center px-2 overflow-x-auto no-scrollbar md:hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
             {NAV_ITEMS.map((item) => {
                 const isActive = location.pathname.startsWith(item.path);
                 return (
                     <button
                         key={item.label}
                         onClick={() => navigate(item.path)}
-                        style={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            gap: 2, padding: '4px 8px', background: 'transparent', border: 'none',
-                            cursor: 'pointer', minWidth: 60, position: 'relative'
-                        }}
+                        aria-label={item.label}
+                        className={`flex flex-col flex-1 items-center justify-center py-2 h-full min-h-[64px] min-w-[62px] relative transition-colors ${isActive ? 'text-[#15803d]' : 'text-gray-500 hover:text-gray-700'}`}
                     >
-                        <span style={{ fontSize: 20 }}>{item.icon}</span>
-                        <span style={{ fontSize: 10, fontWeight: 600, color: isActive ? '#16a34a' : '#64748b' }}>
+                        <span className="text-2xl mt-1 leading-none flex items-center justify-center h-7" aria-hidden="true">{item.icon}</span>
+                        <span className="text-[11px] font-medium mt-1 w-full text-center tracking-tight truncate px-0.5">
                             {item.label}
                         </span>
                         {isActive && (
                             <motion.div
-                                layoutId="mobileBottomNav"
-                                style={{
-                                    position: 'absolute', top: -4, width: '40%', height: 3,
-                                    background: '#16a34a', borderRadius: '0 0 4px 4px'
-                                }}
+                                layoutId="bottomNavIndicator"
+                                className="absolute top-0 w-8 h-[3px] bg-[#15803d] rounded-b-full"
                             />
                         )}
                     </button>
                 );
             })}
-        </div>
+        </nav>
     );
 }

@@ -112,16 +112,16 @@ function FarmerBookingRequestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1220] text-white">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
       <div className="mx-auto max-w-6xl px-4 py-8">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
           <div className="mb-6">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-200">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-bold uppercase tracking-widest text-emerald-700">
               Farmer
             </div>
-            <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-400">Services</div>
-            <h1 className="mt-2 text-3xl font-black tracking-tight">Booking System</h1>
-            <p className="mt-2 text-sm text-slate-300">
+            <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Services</div>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Booking System</h1>
+            <p className="mt-2 text-sm text-slate-600">
               Book equipment, expert consultation, or farm supplies delivery.
             </p>
           </div>
@@ -134,14 +134,14 @@ function FarmerBookingRequestPage() {
                 onClick={() => setTab(t.key)}
                 className={`flex-1 rounded-2xl border px-4 py-4 text-left transition ${
                   tab === t.key
-                    ? "border-white/20 bg-white/10"
-                    : "border-white/10 bg-white/5 hover:bg-white/10"
+                    ? "border-emerald-600 bg-emerald-50 shadow-sm"
+                    : "border-slate-200 bg-white hover:border-slate-300"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="text-sm font-black">{t.title}</div>
-                    <div className="mt-1 text-xs text-slate-300">{t.subtitle}</div>
+                    <div className={`text-sm font-black ${tab === t.key ? "text-emerald-900" : "text-slate-900"}`}>{t.title}</div>
+                    <div className="mt-1 text-xs text-slate-500">{t.subtitle}</div>
                   </div>
                   <div className="text-2xl">{t.icon}</div>
                 </div>
@@ -166,7 +166,7 @@ function FarmerBookingRequestPage() {
                   {/* Common */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                      <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                         District
                       </label>
                       <input
@@ -178,7 +178,7 @@ function FarmerBookingRequestPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                         Date
                       </label>
                       <input
@@ -196,7 +196,7 @@ function FarmerBookingRequestPage() {
                       <motion.div key="equipment" {...cardMotion} className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div>
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                            <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                               Equipment
                             </label>
                             <select
@@ -212,7 +212,7 @@ function FarmerBookingRequestPage() {
                             </select>
                           </div>
                           <div>
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                            <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                               Hours / Day
                             </label>
                             <input
@@ -235,7 +235,7 @@ function FarmerBookingRequestPage() {
                       <motion.div key="expert" {...cardMotion} className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div>
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                            <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                               Consultation type
                             </label>
                             <select
@@ -251,7 +251,7 @@ function FarmerBookingRequestPage() {
                             </select>
                           </div>
                           <div>
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                            <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                               Phone (WhatsApp)
                             </label>
                             <input
@@ -264,7 +264,7 @@ function FarmerBookingRequestPage() {
                           </div>
                         </div>
                         <div>
-                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                          <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                             Preferred language
                           </label>
                           <div className="mt-2 flex flex-wrap gap-2">
@@ -290,7 +290,7 @@ function FarmerBookingRequestPage() {
                     {tab === "supply" && (
                       <motion.div key="supply" {...cardMotion} className="space-y-4">
                         <div>
-                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                          <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                             Items needed
                           </label>
                           <textarea
@@ -303,7 +303,7 @@ function FarmerBookingRequestPage() {
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                          <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                             Delivery address
                           </label>
                           <textarea
@@ -323,7 +323,7 @@ function FarmerBookingRequestPage() {
                   </AnimatePresence>
 
                   <div>
-                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    <label className="text-sm font-black uppercase tracking-widest text-slate-400">
                       Notes (optional)
                     </label>
                     <textarea

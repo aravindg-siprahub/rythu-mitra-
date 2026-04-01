@@ -70,12 +70,12 @@ function DayCard({ day, actionData, isGoodSpray, isAvoidSpray }) {
                 border: `1px solid ${tint.text}33`,
             }}
         >
-            <span className="text-[10px] font-bold" style={{ color: tint.text }}>{date}</span>
+            <span className="text-sm font-bold" style={{ color: tint.text }}>{date}</span>
             <span className="text-2xl">{getWeatherIcon(day.condition)}</span>
             <span className="text-sm font-black" style={{ color: THEME.colors.textPrimary }}>
                 {day.max_temp ?? day.temperature ?? '–'}°C
             </span>
-            <span className="text-[10px]" style={{ color: THEME.colors.textSecondary }}>
+            <span className="text-sm" style={{ color: THEME.colors.textSecondary }}>
                 🌧 {day.rainfall ?? day.precipitation ?? 0}mm
             </span>
             {/* Humidity */}
@@ -89,7 +89,7 @@ function DayCard({ day, actionData, isGoodSpray, isAvoidSpray }) {
             <div style={{ marginTop: 6 }}>
                 {actionData?.action && (
                     <div style={{
-                        fontSize: 10, lineHeight: 1.4,
+                        fontSize: 14, lineHeight: 1.4,
                         color: actionData.action_type === 'avoid_spray' ? '#b91c1c'
                             : actionData.action_type === 'irrigate' ? '#0369a1'
                             : actionData.action_type === 'spray' ? '#166534'
@@ -103,10 +103,10 @@ function DayCard({ day, actionData, isGoodSpray, isAvoidSpray }) {
                     </div>
                 )}
                 {!actionData?.action && isGoodSpray && (
-                    <div style={{ fontSize: 10, color: '#166534', textAlign: 'center' }}>✅ Good spray day</div>
+                    <div style={{ fontSize: 14, color: '#166534', textAlign: 'center' }}>✅ Good spray day</div>
                 )}
                 {!actionData?.action && isAvoidSpray && (
-                    <div style={{ fontSize: 10, color: '#b91c1c', textAlign: 'center' }}>❌ No spray</div>
+                    <div style={{ fontSize: 14, color: '#b91c1c', textAlign: 'center' }}>❌ No spray</div>
                 )}
             </div>
         </div>
@@ -151,7 +151,7 @@ export default function WeatherModule() {
     const crop = selectedCrop;
 
     return (
-        <div style={{ backgroundColor: THEME.colors.background, minHeight: '100vh' }}>
+        <div style={{ backgroundColor: THEME.colors.background, minHeight: '100vh', paddingBottom: '80px' }} className="pb-24 md:pb-0">
             <SeasonBanner />
 
             <div className="max-w-5xl mx-auto px-4 py-6">
@@ -189,7 +189,7 @@ export default function WeatherModule() {
                         >
                             {/* State Input */}
                             <div className="group">
-                                <label className="text-[10px] font-black uppercase tracking-widest block mb-1.5 px-1" style={{ color: THEME.colors.textSecondary }}>
+                                <label className="text-sm font-black uppercase tracking-widest block mb-1.5 px-1" style={{ color: THEME.colors.textSecondary }}>
                                     State 🏛️
                                 </label>
                                 <div className="relative">
@@ -208,7 +208,7 @@ export default function WeatherModule() {
 
                             {/* Location Input */}
                             <div className="group">
-                                <label className="text-[10px] font-black uppercase tracking-widest block mb-1.5 px-1" style={{ color: THEME.colors.textSecondary }}>
+                                <label className="text-sm font-black uppercase tracking-widest block mb-1.5 px-1" style={{ color: THEME.colors.textSecondary }}>
                                     Your Location 🏙️
                                 </label>
                                 <div className="relative">
@@ -227,7 +227,7 @@ export default function WeatherModule() {
 
                             {/* Crop Dropdown */}
                             <div className="group">
-                                <label className="text-[10px] font-black uppercase tracking-widest block mb-1.5 px-1" style={{ color: THEME.colors.textSecondary }}>
+                                <label className="text-sm font-black uppercase tracking-widest block mb-1.5 px-1" style={{ color: THEME.colors.textSecondary }}>
                                     Your Crop 🌾
                                 </label>
                                 <div className="relative">
@@ -246,7 +246,7 @@ export default function WeatherModule() {
                                         ))}
                                     </select>
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base">🚜</span>
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[10px]">▼</span>
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sm">▼</span>
                                 </div>
                             </div>
 
@@ -302,7 +302,7 @@ export default function WeatherModule() {
                                     <h3 className="font-black text-xl" style={{ color: THEME.colors.textPrimary }}>
                                         {result.location || `${selectedDistrict}, ${selectedState}`}
                                     </h3>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Current Forecast Area</p>
+                                    <p className="text-sm font-black uppercase tracking-widest text-slate-400">Current Forecast Area</p>
                                 </div>
                             </div>
                             <div className="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">

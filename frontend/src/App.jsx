@@ -41,7 +41,7 @@ function LoadingScreen() {
         </div>
         <div className="text-center">
           <h2 className="text-lg font-black tracking-widest uppercase text-white mb-1">Rythu Mitra OS</h2>
-          <p className="text-[10px] font-bold text-slate-500 tracking-[0.3em] uppercase animate-pulse">
+          <p className="text-sm font-bold text-slate-500 tracking-[0.3em] uppercase animate-pulse">
             Initializing Intelligence Console...
           </p>
         </div>
@@ -63,14 +63,6 @@ function AnimatedRoutes() {
 
         {/* ── PROTECTED ── */}
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardNew />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/select-role"
           element={
             <ProtectedRoute>
@@ -80,6 +72,14 @@ function AnimatedRoutes() {
         />
 
         <Route element={<AppLayout />}>
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardNew />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile"
             element={

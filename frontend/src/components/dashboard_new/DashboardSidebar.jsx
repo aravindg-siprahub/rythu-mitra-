@@ -151,7 +151,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
                     {NAV_SECTIONS.map((section) => (
                         <div key={section.label} style={{ marginBottom: 8 }}>
                             <p style={{
-                                fontSize:      10,
+                                fontSize: 14,
                                 fontWeight:    700,
                                 color:         '#9ca3af',
                                 letterSpacing: '0.08em',
@@ -222,7 +222,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
                                             </p>
                                         </div>
                                         {isActive && (
-                                            <span style={{ fontSize: 10, color: '#16a34a', fontWeight: 700 }}>
+                                            <span style={{ fontSize: 14, color: '#16a34a', fontWeight: 700 }}>
                                                 ●
                                             </span>
                                         )}
@@ -259,7 +259,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
                     </button>
                     <p style={{
                         textAlign: 'center',
-                        fontSize:  10,
+                        fontSize: 14,
                         color:     '#9ca3af',
                         marginTop: 10,
                         marginBottom: 0,

@@ -1,233 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../config/supabaseClient';
-import {
-    getFarmerCity,
-    getFarmerDistrict,
-    getFarmerState
-} from '../utils/locationService';
+import os
+import re
 
-/**
- * Premium Profile Page for Rythu Mitra
- * Designed with a focus on modern UX, performance, and accessibility.
- */
-export default function Profile() {
-    const navigate = useNavigate();
-    const { user, logout } = useAuth();
-    const [profileData, setProfileData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('farm');
-    const [isEditing, setIsEditing] = useState(false);
-    const [memberSince, setMemberSince] = useState('');
-    const [role, setRole] = useState('Farmer');
-    const [autoFilledLocation, setAutoFilledLocation] = useState(false);
-    const [farmSize, setFarmSize] = useState('');
-    const [primaryCrops, setPrimaryCrops] = useState([]);
-    const [farmingYears, setFarmingYears] = useState('');
-    const [userRole, setUserRole] = useState('farmer'); // farmer | worker | both
-    const [savedCropReports, setSavedCropReports] = useState([]);
-    const [savedDiseaseReports, setSavedDiseaseReports] = useState([]);
-    const [cropReportCount, setCropReportCount] = useState(0);
-    const [diseaseReportCount, setDiseaseReportCount] = useState(0);
+profile_path = os.path.join('frontend', 'src', 'pages', 'Profile.jsx')
 
-    // Form states
-    const [formData, setFormData] = useState({
-        full_name: '',
-        phone: '',
-        location: '',
-        district: '',
-        farm_size: '',
-        primary_crops: ''
-    });
+# 1. Update Profile.jsx
+with open(profile_path, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
+start_idx = content.find('    return (\n        <div className="min-h-screen')
 
-        async function fetchProfile() {
-            try {
-                const { data: sessionData } = await supabase.auth.getSession();
-                const sessionUser = sessionData?.session?.user;
-                if (!sessionUser) {
-                    setLoading(false);
-                    return;
-                }
+if start_idx == -1:
+    print("Could not find start index in Profile.jsx")
+else:
+    end_idx = content.rfind('    );\n}')
 
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', sessionUser.id)
-                    .maybeSingle();
-
-                if (error) {
-                    console.error('[Profile] fetch failed:', error);
-                    setLoading(false);
-                    return;
-                }
-
-                let profile = data;
-                if (!profile) {
-                    const { data: created, error: createError } = await supabase
-                        .from('profiles')
-                        .insert({
-                            id: sessionUser.id,
-                            email: sessionUser.email,
-                            created_at: new Date().toISOString(),
-                        })
-                        .select('*')
-                        .single();
-
-                    if (createError) {
-                        console.error('[Profile] create failed:', createError);
-                        setLoading(false);
-                        return;
-                    }
-                    profile = created;
-                }
-
-                setProfileData(profile || {});
-                const gpsCity = getFarmerCity() || '';
-                const gpsDistrict = getFarmerDistrict() || '';
-                const gpsState = getFarmerState() || '';
-
-                const resolvedLocation =
-                    profile?.location ||
-                    profile?.city ||
-                    profile?.village ||
-                    gpsCity ||
-                    '';
-                const resolvedDistrict =
-                    profile?.district ||
-                    profile?.district_name ||
-                    gpsDistrict ||
-                    '';
-
-                setFormData({
-                    full_name: profile?.full_name || profile?.name || profile?.farmer_name || sessionUser.user_metadata?.full_name || '',
-                    phone: profile?.phone || profile?.phone_number || profile?.mobile || '',
-                    location: resolvedLocation,
-                    district: resolvedDistrict,
-                    farm_size: profile?.farm_size || profile?.farm_size_acres || '',
-                    primary_crops: profile?.primary_crops || '',
-                });
-                setFarmSize((profile?.farm_size || profile?.farm_size_acres || '').toString());
-                const cropsRaw = profile?.primary_crops || [];
-                setPrimaryCrops(Array.isArray(cropsRaw) ? cropsRaw : String(cropsRaw).split(',').map((c) => c.trim()).filter(Boolean));
-                setFarmingYears((profile?.farming_years || '').toString());
-                setUserRole((profile?.user_role || 'farmer').toLowerCase());
-
-                if (!profile?.location && !profile?.city && !profile?.village && gpsCity) {
-                    setAutoFilledLocation(true);
-                } else {
-                    setAutoFilledLocation(false);
-                }
-
-                const rawRole = (profile?.user_role || 'farmer').toString();
-                setRole(rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase());
-                setMemberSince(
-                    profile?.created_at
-                        ? new Date(profile.created_at).getFullYear().toString()
-                        : new Date().getFullYear().toString()
-                );
-            } catch (err) {
-                console.error('[Profile] Load failed:', err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchProfile();
-    }, [user, navigate]);
-
-    useEffect(() => {
-        try {
-            const crops = JSON.parse(localStorage.getItem('rm_crop_reports') || '[]');
-            setCropReportCount(Array.isArray(crops) ? crops.length : 0);
-            setSavedCropReports(Array.isArray(crops) ? crops.slice(0, 3) : []);
-
-            const diseases = JSON.parse(localStorage.getItem('rm_disease_history') || '[]');
-            setDiseaseReportCount(Array.isArray(diseases) ? diseases.length : 0);
-            setSavedDiseaseReports(Array.isArray(diseases) ? diseases.slice(0, 3) : []);
-        } catch (e) {
-            console.error('Failed to load reports:', e);
-        }
-    }, []);
-
-    const handleSave = async () => {
-        setLoading(true);
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    ...formData,
-                    farm_size_acres: farmSize ? Number(farmSize) : null,
-                    primary_crops: primaryCrops,
-                    farming_years: farmingYears ? Number(farmingYears) : null,
-                    user_role: userRole,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', user.id);
-
-            if (error) {
-                console.error('[Profile] save error:', error);
-            } else {
-                setProfileData({ ...profileData, ...formData });
-                setIsEditing(false);
-            }
-        } catch (err) {
-            console.error('[Profile] update failed:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const getProfileCompletion = () => {
-        const fields = [
-            { key: 'name', value: formData.full_name, label: 'Full name', impact: 'Show your name to farmers/workers' },
-            { key: 'phone', value: formData.phone, label: 'Phone number', impact: 'Required for Call + WhatsApp contact' },
-            { key: 'location', value: formData.location, label: 'Village/City', impact: 'Helps match nearby jobs' },
-            { key: 'district', value: formData.district, label: 'District', impact: 'Required for market price auto-fill' },
-            { key: 'farmSize', value: formData.farm_size, label: 'Farm size', impact: 'Personalizes income estimates' },
-        ];
-
-        const filled = fields.filter((f) => f.value && f.value.toString().trim() !== '');
-        const missing = fields.filter((f) => !f.value || f.value.toString().trim() === '');
-        const percent = Math.round((filled.length / fields.length) * 100);
-
-        return { percent, missing, filled };
-    };
-
-    if (loading && !profileData) {
-        return (
-            <div className="flex h-screen w-full items-center justify-center bg-[#020617] text-white">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-emerald-500" />
-                    <p className="text-sm font-medium text-slate-400">Loading your profile...</p>
-                </div>
-            </div>
-        );
-    }
-
-    const initials = (
-        formData.full_name ||
-        user?.user_metadata?.full_name ||
-        user?.email ||
-        'F'
-    )
-        .charAt(0)
-        .toUpperCase();
-
-    return (
-        <div className="min-h-screen bg-gray-50 font-sans w-full flex justify-center">
-            <div className="w-full max-w-none md:max-w-lg bg-white min-h-screen pb-6 relative border-x border-gray-100 shadow-sm">
+    new_jsx = r"""    return (
+        <div className="min-h-screen bg-white pb-40 font-sans w-full max-w-none md:max-w-2xl md:mx-auto">
             {/* 2. GREEN HEADER */}
-            <div className="bg-[#15803d] min-h-[200px] pt-12 pb-8 px-4 relative flex flex-col items-center overflow-hidden">
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}/>
-                <div className="absolute top-4 right-4 z-20">
+            <div className="bg-[#15803d] pt-12 pb-16 px-4 relative flex flex-col items-center">
+                <div className="absolute top-4 right-4">
                     {!isEditing && (
                         <button onClick={() => setIsEditing(true)} className="text-white text-sm font-semibold bg-white/20 px-3 py-1.5 rounded-full">
                             Edit
@@ -235,19 +26,19 @@ export default function Profile() {
                     )}
                 </div>
                 
-                <div className="w-24 h-24 rounded-full ring-4 ring-white bg-white flex items-center justify-center text-3xl font-black text-green-700 shadow-lg z-10 mt-2">
+                <div className="w-20 h-20 rounded-full border-4 border-white bg-white flex items-center justify-center text-3xl font-black text-green-700 shadow-md z-10 -mb-10 mt-2">
                     {initials}
                 </div>
                 
-                <h1 className="text-2xl font-bold text-white mt-4 text-center z-10">
+                <h1 className="text-2xl font-bold text-white mt-12 text-center">
                     {formData.full_name || 'Farmer Friend'}
                 </h1>
                 
-                <div className="inline-flex bg-green-600 text-white text-sm px-4 py-1.5 rounded-full mt-2 font-medium z-10">
+                <div className="inline-flex bg-green-600 text-white text-sm px-3 py-1 rounded-full mt-2 font-medium">
                     {role || 'Farmer'}
                 </div>
                 
-                <p className="text-green-100 text-sm mt-2 flex items-center gap-1 z-10">
+                <p className="text-green-100 text-sm mt-1">
                     📍 {formData.location || 'Location not set'} · Member since {memberSince || new Date().getFullYear()}
                 </p>
             </div>
@@ -278,13 +69,13 @@ export default function Profile() {
                     const { percent } = getProfileCompletion();
                     if (percent === 100) return null;
                     return (
-                        <div className="mx-0 mt-4 bg-gradient-to-r from-green-600 to-[#15803d] rounded-2xl p-4 text-white shadow-sm">
-                            <div className="flex justify-between mb-3 items-center">
+                        <div className="mx-4 mt-4 bg-gradient-to-r from-green-600 to-[#15803d] rounded-2xl p-4 text-white shadow-sm">
+                            <div className="flex justify-between mb-2 items-end">
                                 <span className="font-semibold text-sm">Profile Completion</span>
-                                <span className="text-2xl font-bold float-right">{percent}%</span>
+                                <span className="text-xl font-bold">{percent}%</span>
                             </div>
-                            <div className="bg-green-500/30 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-white h-2.5 rounded-full animate-none" style={{ width: `${percent}%` }}></div>
+                            <div className="bg-green-800/40 rounded-full h-2 overflow-hidden">
+                                <div className="bg-white h-2 rounded-full transition-all duration-500" style={{ width: `${percent}%` }}></div>
                             </div>
                             <p className="text-green-100 text-xs mt-2 opacity-90">
                                 Add phone number to reach 100%
@@ -295,20 +86,20 @@ export default function Profile() {
 
                 {/* 3. STATS SECTION */}
                 <div className="grid grid-cols-3 gap-3 px-4 mt-6">
-                    <div className="bg-green-50 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm">
-                        <span className="w-8 h-8 flex items-center justify-center text-2xl mb-1 mt-1">🌾</span>
-                        <span className="text-3xl font-bold text-green-700">{cropReportCount}</span>
-                        <span className="text-[11px] uppercase tracking-widest text-gray-400 mt-1 text-center">Crop Scans</span>
+                    <div className="bg-[#f0fdf4] rounded-2xl p-4 flex flex-col items-center justify-center border border-green-100 shadow-sm">
+                        <span className="w-8 h-8 text-[#15803d] flex items-center justify-center text-2xl mb-1 mt-1">🌾</span>
+                        <span className="text-3xl font-bold text-[#15803d]">{cropReportCount}</span>
+                        <span className="text-xs text-gray-500 uppercase tracking-wide mt-1 text-center font-semibold">Crop Scans</span>
                     </div>
-                    <div className="bg-green-50 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm">
-                        <span className="w-8 h-8 flex items-center justify-center text-2xl mb-1 mt-1">🦠</span>
-                        <span className="text-3xl font-bold text-green-700">{diseaseReportCount}</span>
-                        <span className="text-[11px] uppercase tracking-widest text-gray-400 mt-1 text-center">Disease Scans</span>
+                    <div className="bg-[#f0fdf4] rounded-2xl p-4 flex flex-col items-center justify-center border border-green-100 shadow-sm">
+                        <span className="w-8 h-8 text-[#15803d] flex items-center justify-center text-2xl mb-1 mt-1">🦠</span>
+                        <span className="text-3xl font-bold text-[#15803d]">{diseaseReportCount}</span>
+                        <span className="text-xs text-gray-500 uppercase tracking-wide mt-1 text-center font-semibold">Disease Scans</span>
                     </div>
-                    <div className="bg-green-50 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm">
-                        <span className="w-8 h-8 flex items-center justify-center text-2xl mb-1 mt-1">⭐</span>
-                        <span className="text-3xl font-bold text-green-700">4.8</span>
-                        <span className="text-[11px] uppercase tracking-widest text-gray-400 mt-1 text-center">Rating</span>
+                    <div className="bg-[#f0fdf4] rounded-2xl p-4 flex flex-col items-center justify-center border border-green-100 shadow-sm">
+                        <span className="w-8 h-8 text-[#15803d] flex items-center justify-center text-2xl mb-1 mt-1">⭐</span>
+                        <span className="text-3xl font-bold text-[#15803d]">4.8</span>
+                        <span className="text-xs text-gray-500 uppercase tracking-wide mt-1 text-center font-semibold">Rating</span>
                     </div>
                 </div>
 
@@ -318,8 +109,8 @@ export default function Profile() {
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`flex-[1_0_auto] text-center min-w-[33%] py-2.5 px-4 min-h-[48px] text-sm transition-all duration-200 ${
-                                activeTab === tab ? 'bg-white shadow-sm text-green-700 font-semibold rounded-lg' : 'text-gray-500 font-medium rounded-lg'
+                            className={`flex-[1_0_auto] text-center min-w-[33%] py-2.5 px-4 text-sm rounded-lg transition-all ${
+                                activeTab === tab ? 'bg-white shadow text-[#15803d] font-semibold' : 'text-gray-500 font-medium'
                             }`}
                         >
                             {tab === 'info' ? 'My Details' : tab === 'farm' ? 'Farm Intelligence' : 'Recent Activity'}
@@ -513,7 +304,7 @@ export default function Profile() {
                 {/* 10. SIGN OUT BUTTON */}
                 <button 
                     onClick={logout}
-                    className="mx-0 mt-4 border-2 border-red-200 text-red-500 rounded-2xl py-4 flex items-center justify-center gap-2 w-full text-base font-semibold mb-6"
+                    className="mx-4 mt-6 mb-24 w-[calc(100%-2rem)] border-2 border-red-200 text-red-600 py-3.5 min-h-[52px] rounded-xl text-base font-semibold flex items-center justify-center gap-2"
                 >
                     <span aria-hidden="true" className="text-xl">🚪</span> Sign Out
                 </button>
@@ -521,7 +312,7 @@ export default function Profile() {
 
             {/* 9. SAVE / CANCEL BUTTONS (Sticky Bottom) */}
             {isEditing && (
-                <div className="sticky bottom-[64px] md:bottom-0 w-full bg-white border-t border-gray-100 py-4 px-4 z-40 pb-safe">
+                <div className="fixed bottom-[64px] left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:max-w-2xl lg:mx-auto pb-safe">
                     <button 
                         onClick={handleSave}
                         disabled={loading}
@@ -538,7 +329,9 @@ export default function Profile() {
                     </button>
                 </div>
             )}
-            </div>
-        </div>
-    );
-}
+        </div>"""
+
+    with open(profile_path, 'w', encoding='utf-8') as f:
+        f.write(content[:start_idx] + new_jsx + "\n}")
+
+    print("Profile.jsx updated successfully!")

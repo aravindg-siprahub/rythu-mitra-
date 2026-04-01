@@ -562,7 +562,7 @@ Detected via Rythu Mitra app`;
                             </button>
                         )}
 
-                        <p className="text-[10px] text-gray-500 text-center mt-3 leading-tight">
+                        <p className="text-sm text-gray-500 text-center mt-3 leading-tight">
                             📸 Upload a clear photo of a plant leaf or crop only
                             <br />
                             <span className="italic font-medium">Please upload only plant, leaf or crop photos</span>
@@ -956,11 +956,11 @@ Detected via Rythu Mitra app`;
                                 </p>
                                 <div className="space-y-2">
                                     <div>
-                                        <label className="text-[11px] font-medium block mb-1" style={{ color: T.textSecondary }}>Scan a different plant</label>
+                                        <label className="text-sm font-medium block mb-1" style={{ color: T.textSecondary }}>Scan a different plant</label>
                                         <select
                                             value={cropName}
                                             onChange={(e) => setCropName(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg text-[13px] border focus:outline-none"
+                                            className="w-full px-3 py-2 rounded-lg text-sm border focus:outline-none"
                                             style={{ borderColor: T.border, color: T.textPrimary, backgroundColor: T.surface }}
                                         >
                                             {CROP_OPTIONS.map(opt => (

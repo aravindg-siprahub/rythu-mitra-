@@ -51,7 +51,7 @@ def create_job_post(data: dict) -> dict:
         "title", "description", "service_type", "scheduled_date",
         "duration", "daily_rate", "urgency",
         "workers_needed", "tractors_needed", "transport_needed", "sprayers_needed",
-        "work_type", "crop", "units",
+        "work_type", "crop",
     ] if data.get(k) is not None}
     payload.setdefault("urgency", "normal")
     payload.setdefault("status", "open")

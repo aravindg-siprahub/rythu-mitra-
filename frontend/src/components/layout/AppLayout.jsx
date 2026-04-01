@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom';
-import MobileBottomNav from '../layout/MobileBottomNav';
+import DashboardHeader from '../dashboard_new/DashboardHeader';
 
 /**
  * AppLayout — wraps all protected agriculture module pages.
- * Provides mobile bottom nav. Sidebar is on Dashboard only.
- * /crop, /disease, /market, /weather, /workers, /transport, /governance, /work, /profile, /settings
+ * Provides: green top bar + pill nav (DashboardHeader) + mobile bottom nav.
+ * /dashboard, /crop, /disease, /market, /weather, /work, /profile, /settings, /booking
  */
 export default function AppLayout() {
     return (
@@ -13,13 +13,14 @@ export default function AppLayout() {
             background: '#f5f5f0',
             fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
         }}>
-            {/* Module page content */}
-            <div style={{ paddingBottom: 72 }}>
+            {/* Green header + pill nav — global across all authenticated pages */}
+            <DashboardHeader />
+
+            {/* Module page content — pb-16 clears mobile bottom nav */}
+            <div style={{ paddingBottom: 80 }}>
                 <Outlet />
             </div>
 
-            {/* Mobile bottom navigation bar */}
-            <MobileBottomNav />
         </div>
     );
 }

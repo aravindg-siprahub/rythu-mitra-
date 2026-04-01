@@ -313,7 +313,7 @@ function StatusBadge({ status }) {
     if(status === 'High') bgClasses = 'bg-amber-100 text-amber-700';
     if(status === 'Low') bgClasses = 'bg-red-100 text-red-700';
     return (
-        <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${bgClasses}`}>
+        <span className={`text-sm px-1.5 py-0.5 rounded-md font-medium ${bgClasses}`}>
             {status}
         </span>
     );
@@ -331,11 +331,11 @@ function ProgressRing({ value, max, label, status }) {
                     <circle cx="24" cy="24" r={radius} className="text-gray-200" strokeWidth="4" stroke="currentColor" fill="transparent" />
                     <circle cx="24" cy="24" r={radius} className={isGood ? "text-green-600" : (status === 'Low' || status === 'High' ? "text-amber-500" : "text-gray-300")} strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" stroke="currentColor" fill="transparent" style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
                 </svg>
-                <div className="absolute flex items-center justify-center text-[10px] font-medium text-gray-700">
+                <div className="absolute flex items-center justify-center text-sm font-medium text-gray-700">
                     {value || 0}
                 </div>
             </div>
-            <span className="text-[10px] text-gray-500 mt-1 font-medium">{label}</span>
+            <span className="text-sm text-gray-500 mt-1 font-medium">{label}</span>
         </div>
     );
 }
@@ -611,11 +611,11 @@ ${crop.why_this_crop || 'Based on your specific soil health report.'}
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[15px] font-medium text-gray-900 leading-tight">{rec.crop}</span>
-                            <span className="text-[11px] text-gray-500 mt-0.5">{cropTe}</span>
+                            <span className="text-sm text-gray-500 mt-0.5">{cropTe}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 text-center">
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-green-100 text-green-800">Rank #{rank}</span>
+                        <span className="text-sm font-medium px-2 py-0.5 rounded bg-green-100 text-green-800">Rank #{rank}</span>
                         {(() => {
                             const tier = getProfitTier(marketValue);
                             return (
@@ -635,14 +635,14 @@ ${crop.why_this_crop || 'Based on your specific soil health report.'}
                 </div>
                 
                 <div className="flex flex-col gap-1.5">
-                    <div className="flex justify-between text-[11px] font-medium text-gray-700">
+                    <div className="flex justify-between text-sm font-medium text-gray-700">
                         <span>AI confidence</span>
                         <span>{confidence}%</span>
                     </div>
                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${confidence}%`, backgroundColor: '#166534' }}></div>
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-0.5 truncate">
+                    <p className="text-sm text-gray-500 mt-0.5 truncate">
                         High probability of success based on historical data matching your soil profile.
                     </p>
                 </div>
@@ -651,8 +651,8 @@ ${crop.why_this_crop || 'Based on your specific soil health report.'}
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-4">
                     <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
-                        <h4 className="text-[11px] font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><span className="text-[14px]">🧠</span> Why this crop suits your farm</h4>
-                        <p className="text-[12px] text-gray-800 leading-relaxed mb-2">{whyEn}</p>
+                        <h4 className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><span className="text-[14px]">🧠</span> Why this crop suits your farm</h4>
+                        <p className="text-xs text-gray-800 leading-relaxed mb-2">{whyEn}</p>
                     </div>
                     {crop.sowing_window && (() => {
                       const sowing = getSowingStatus(crop.sowing_window);
@@ -761,14 +761,14 @@ ${crop.why_this_crop || 'Based on your specific soil health report.'}
     </div>
   );
 })()}
-                    <div className="bg-green-50 text-green-800 text-[12px] font-medium px-3 py-2.5 rounded-md flex items-center justify-between border border-green-100">
+                    <div className="bg-green-50 text-green-800 text-xs font-medium px-3 py-2.5 rounded-md flex items-center justify-between border border-green-100">
                         <span className="flex items-center gap-1.5"><span className="text-[14px]">⚖️</span> Expected Yield</span>
                         <span>{yieldEst}</span>
                     </div>
                 </div>
                 <div className="flex flex-col justify-between">
                     <div>
-                        <h4 className="text-[11px] font-medium text-gray-700 mb-2.5 flex items-center gap-1.5"><span className="text-[14px]">📊</span> AI Influence Factors</h4>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2.5 flex items-center gap-1.5"><span className="text-[14px]">📊</span> AI Influence Factors</h4>
                         <p style={{
                           fontSize: 11,
                           color: '#6b7280',
@@ -812,7 +812,7 @@ ${crop.why_this_crop || 'Based on your specific soil health report.'}
                                         .toLocaleString('en-IN')}/qtl
                                   </p>
                                   <span style={{
-                                    fontSize: 10,
+                                    fontSize: 14,
                                     fontWeight: 700,
                                     background: '#dcfce7',
                                     color: '#15803d',
@@ -907,7 +907,7 @@ ${crop.why_this_crop || 'Based on your specific soil health report.'}
                               </>
                             )}
                         </div>
-                        <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-[10px] font-medium self-start mt-3">
+                        <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-sm font-medium self-start mt-3">
                             Check local mandi
                         </div>
                     </div>
@@ -1012,8 +1012,8 @@ function WarningCard({ warning }) {
         <div className="mb-4 bg-amber-50 rounded-lg p-3 flex gap-3" style={{ borderWidth: '0.5px', borderColor: '#f59e0b' }}>
             <span className="text-amber-600 flex-shrink-0 mt-0.5">⚠️</span>
             <div className="flex flex-col gap-1.5">
-                <h4 className="text-[12px] font-bold text-amber-900">Agricultural Alert</h4>
-                <p className="text-[12px] text-amber-800 leading-snug">{defaultEn}</p>
+                <h4 className="text-xs font-bold text-amber-900">Agricultural Alert</h4>
+                <p className="text-xs text-amber-800 leading-snug">{defaultEn}</p>
             </div>
         </div>
     );
@@ -1035,13 +1035,13 @@ function NextStepsCard({ fixes }) {
     ];
     return (
         <div className="bg-white rounded-lg p-[14px] mt-4" style={{ borderWidth: '0.5px', borderColor: '#e5e7eb' }}>
-            <h3 className="text-[13px] font-medium text-gray-900 mb-3">Next steps to improve your farm</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Next steps to improve your farm</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 {steps.map((fix, idx) => (
                     <div key={idx} className="bg-gray-50 rounded-md" style={{ padding: '10px 12px' }}>
-                        <span className="text-[10px] text-gray-500 block mb-1">Step {idx + 1}</span>
-                        <h4 className="text-[12px] font-medium text-gray-900 mb-1">{fix.nutrient} {(fix.fertilizer ? `— ${fix.fertilizer}` : '')}</h4>
-                        <p className="text-[11px] text-gray-500 leading-snug line-clamp-2">{fix.advice_en}</p>
+                        <span className="text-sm text-gray-500 block mb-1">Step {idx + 1}</span>
+                        <h4 className="text-xs font-medium text-gray-900 mb-1">{fix.nutrient} {(fix.fertilizer ? `— ${fix.fertilizer}` : '')}</h4>
+                        <p className="text-sm text-gray-500 leading-snug line-clamp-2">{fix.advice_en}</p>
                     </div>
                 ))}
             </div>
@@ -1131,7 +1131,7 @@ export default function CropRecommendation() {
                 {/* ── Left Column: Farm Input ───────────────────────────────── */}
                 <div className="w-full lg:w-[320px] flex-shrink-0">
                     <div className="bg-white rounded-lg p-4 shadow-sm" style={{ borderWidth: '0.5px', borderColor: '#e5e7eb' }}>
-                        <h2 className="text-[13px] font-medium text-gray-900 mb-4">Tell us about your farm</h2>
+                        <h2 className="text-sm font-medium text-gray-900 mb-4">Tell us about your farm</h2>
                         <div style={{
                           background: '#f0fdf4',
                           border: '1px dashed #16a34a',
@@ -1202,7 +1202,7 @@ export default function CropRecommendation() {
                                     const match = districtNames.find(d => val.toLowerCase().includes(d.toLowerCase()));
                                     if (match) fillDistrict(match);
                                 }}
-                                className="w-full px-2 py-2 text-[13px] text-gray-900 bg-transparent focus:outline-none"
+                                className="w-full px-2 py-2 text-sm text-gray-900 bg-transparent focus:outline-none"
                             />
                             <button 
                                 type="button"
@@ -1221,7 +1221,7 @@ export default function CropRecommendation() {
                         </div>
                         {/* Season Row */}
                         <div className="mb-5">
-                            <label className="text-[12px] text-gray-500 block mb-2 font-medium">Growing Season</label>
+                            <label className="text-xs text-gray-500 block mb-2 font-medium">Growing Season</label>
                             <div className="flex items-center gap-2">
                                 {['Summer', 'Monsoon', 'Winter'].map((s) => {
                                     const isSelected = selectedSeason === s;
@@ -1231,7 +1231,7 @@ export default function CropRecommendation() {
                                             key={s}
                                             type="button"
                                             onClick={() => setSelectedSeason(s)}
-                                            className={`flex-1 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                                            className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
                                                 isSelected ? 'bg-[#166534] text-white' : 'bg-gray-50 text-gray-700'
                                             }`}
                                             style={{
@@ -1243,7 +1243,7 @@ export default function CropRecommendation() {
                                     );
                                 })}
                             </div>
-                            <p className="text-[11px] text-gray-500 mt-2">
+                            <p className="text-sm text-gray-500 mt-2">
                                 Showing crops suitable for {selectedSeason} in India
                             </p>
                         </div>
@@ -1253,7 +1253,7 @@ export default function CropRecommendation() {
                                 {fieldsMap.slice(0, 3).map(({ key, label }) => (
                                     <div key={key}>
                                         <div className="flex items-center justify-between mb-1">
-                                            <label className="text-[11px] text-gray-500">{label.split(' ')[0]}</label>
+                                            <label className="text-sm text-gray-500">{label.split(' ')[0]}</label>
                                             <StatusBadge status={getStatus(key, formData[key])} />
                                         </div>
                                         <input
@@ -1262,7 +1262,7 @@ export default function CropRecommendation() {
                                             max={FIELD_LIMITS[key].max}
                                             value={formData[key]}
                                             onChange={(e) => updateField(key, e.target.value)}
-                                            className="w-full px-2 py-1.5 rounded-md text-[13px] text-gray-900 bg-white border focus:outline-none focus:border-green-500"
+                                            className="w-full px-2 py-1.5 rounded-md text-sm text-gray-900 bg-white border focus:outline-none focus:border-green-500"
                                             style={{ borderColor: fieldErrors[key] ? '#ef4444' : '#e5e7eb' }}
                                         />
                                         {fieldErrors[key] && (
@@ -1283,7 +1283,7 @@ export default function CropRecommendation() {
                                 {fieldsMap.slice(3, 7).map(({ key, label }) => (
                                     <div key={key}>
                                         <div className="flex items-center justify-between mb-1">
-                                            <label className="text-[11px] text-gray-500">{label}</label>
+                                            <label className="text-sm text-gray-500">{label}</label>
                                             <StatusBadge status={getStatus(key, formData[key])} />
                                         </div>
                                         <input
@@ -1294,7 +1294,7 @@ export default function CropRecommendation() {
                                             value={formData[key]}
                                             onChange={(e) => updateField(key, e.target.value)}
                                             placeholder={key === 'rainfall' ? 'Optional (e.g. 800)' : ''}
-                                            className="w-full px-2 py-1.5 rounded-md text-[13px] text-gray-900 bg-white border focus:outline-none focus:border-green-500"
+                                            className="w-full px-2 py-1.5 rounded-md text-sm text-gray-900 bg-white border focus:outline-none focus:border-green-500"
                                             style={{ borderColor: fieldErrors[key] ? '#ef4444' : '#e5e7eb' }}
                                         />
                                         {fieldErrors[key] && (
@@ -1309,7 +1309,7 @@ export default function CropRecommendation() {
                                         )}
                                         {key === 'rainfall' && (
                                             <p style={{
-                                              fontSize: 10,
+                                              fontSize: 14,
                                               color: '#9ca3af',
                                               margin: '2px 0 0',
                                             }}>
@@ -1327,12 +1327,12 @@ export default function CropRecommendation() {
                                             </p>
                                         )}
                                         {key === 'rainfall' && Number(formData[key]) > 5000 && (
-                                            <p className="text-[11px] mt-1 leading-tight" style={{ color: 'var(--color-text-danger, #b91c1c)' }}>
+                                            <p className="text-sm mt-1 leading-tight" style={{ color: 'var(--color-text-danger, #b91c1c)' }}>
                                                 Maximum 5000 mm/year. Typical Indian range is 200–3000 mm.
                                             </p>
                                         )}
                                         {key === 'rainfall' && Number(formData[key]) <= 5000 && getStatus(key, formData[key]) === 'High' && (
-                                            <p className="text-[11px] text-gray-500 mt-1 leading-tight">
+                                            <p className="text-sm text-gray-500 mt-1 leading-tight">
                                                 Very high — ensure drainage channels are clear before sowing
                                             </p>
                                         )}
@@ -1352,7 +1352,7 @@ export default function CropRecommendation() {
                                     {allGreen ? (
                                         <div className="px-3 py-2 rounded-md flex items-center gap-2 bg-green-50">
                                             <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                            <span className="text-[11px] text-gray-700">Excellent — all nutrients in optimal range</span>
+                                            <span className="text-sm text-gray-700">Excellent — all nutrients in optimal range</span>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-2">
@@ -1376,7 +1376,7 @@ export default function CropRecommendation() {
                                                     }
                                                     return (
                                                         <div key={k} className="px-3 py-2 rounded-md bg-amber-50 border border-amber-100 flex flex-col gap-1">
-                                                            <span className="text-[12px] font-medium text-amber-800">
+                                                            <span className="text-xs font-medium text-amber-800">
                                                                 {warningText}
                                                             </span>
                                                         </div>
@@ -1389,7 +1389,7 @@ export default function CropRecommendation() {
                                 </div>
                             )}
                             {error && (
-                                <div className="mb-4 px-3 py-2 rounded-md bg-red-50 border border-red-100 text-[11px] text-red-600">
+                                <div className="mb-4 px-3 py-2 rounded-md bg-red-50 border border-red-100 text-sm text-red-600">
                                     {error}
                                 </div>
                             )}
@@ -1457,7 +1457,7 @@ export default function CropRecommendation() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-[10px] rounded-md text-[13px] font-medium text-white transition-opacity"
+                                className="w-full py-[10px] rounded-md text-sm font-medium text-white transition-opacity"
                                 style={{ backgroundColor: '#166534', opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
                             >
                                 {loading ? 'Analyzing...' : 'Find best crops for my farm'}
@@ -1469,10 +1469,10 @@ export default function CropRecommendation() {
                 <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-end mb-4 px-1">
                         <div>
-                            <h2 className="text-[13px] font-medium text-gray-900">Top crop recommendations</h2>
-                            <p className="text-[11px] text-gray-500 mt-0.5">Ranked by suitability for your farm</p>
+                            <h2 className="text-sm font-medium text-gray-900">Top crop recommendations</h2>
+                            <p className="text-sm text-gray-500 mt-0.5">Ranked by suitability for your farm</p>
                         </div>
-                        <span className="text-[11px] text-gray-500">Season: {selectedSeason} {new Date().getFullYear()}</span>
+                        <span className="text-sm text-gray-500">Season: {selectedSeason} {new Date().getFullYear()}</span>
                     </div>
                     {loading ? (
                         <CropLoadingState />
@@ -1625,7 +1625,7 @@ export default function CropRecommendation() {
                                 !error && (
                                     <div className="p-12 text-center border-dashed border border-gray-300 rounded-lg bg-white mt-4">
                                         <div className="text-3xl mb-3">🌱</div>
-                                        <p className="text-[13px] font-medium text-gray-600">
+                                        <p className="text-sm font-medium text-gray-600">
                                             Enter your farm details on the left and discover the best crops.
                                         </p>
                                     </div>

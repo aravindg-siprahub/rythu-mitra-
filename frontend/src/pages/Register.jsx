@@ -96,12 +96,12 @@ const RoleSelectionStep = ({ onSelect, submitting, error }) => (
     }}
     onMouseEnter={e => !submitting && (e.currentTarget.style.borderColor = '#2E7D32')}
     onMouseLeave={e => !submitting && (e.currentTarget.style.borderColor = '#E0E0E0')}>
-      <span style={{ fontSize: 48 }}>🌾</span>
-      <div>
+      <span style={{ fontSize: 48, flexShrink: 0 }}>🌾</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: '#1B5E20' }}>
           Farmer
         </div>
-        <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: '#666', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           Post jobs, find workers, tractors & transport
         </div>
       </div>
@@ -117,12 +117,12 @@ const RoleSelectionStep = ({ onSelect, submitting, error }) => (
     }}
     onMouseEnter={e => !submitting && (e.currentTarget.style.borderColor = '#1565C0')}
     onMouseLeave={e => !submitting && (e.currentTarget.style.borderColor = '#E0E0E0')}>
-      <span style={{ fontSize: 48 }}>🚜</span>
-      <div>
+      <span style={{ fontSize: 48, flexShrink: 0 }}>🚜</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: '#1565C0' }}>
           Worker / Vehicle Owner
         </div>
-        <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: '#666', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           Browse jobs, apply, earn daily income
         </div>
       </div>
@@ -267,7 +267,7 @@ export default function Register() {
             <div style={styles.bgCircle1} />
             <div style={styles.bgCircle2} />
 
-            <div style={styles.card}>
+            <div className="w-full max-w-sm mx-auto p-4 sm:p-6 md:p-8" style={styles.card}>
                 {/* Brand */}
                 <div style={styles.brand}>
                     <div style={styles.brandIcon}>
@@ -534,10 +534,11 @@ export default function Register() {
 /* ── Per-element style helpers ── */
 const inputStyle = (hasError) => ({
     width: '100%',
+    minHeight: 48,
     padding: '11px 14px 11px 40px',
     border: `1.5px solid ${hasError ? '#f87171' : '#e5e7eb'}`,
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 16, /* text-base avoids iOS zoom */
     color: '#111827',
     background: hasError ? '#fef2f2' : '#fafafa',
     boxSizing: 'border-box',
@@ -546,10 +547,11 @@ const inputStyle = (hasError) => ({
 
 const selectStyle = (hasError) => ({
     width: '100%',
+    minHeight: 48,
     padding: '11px 14px',
     border: `1.5px solid ${hasError ? '#f87171' : '#e5e7eb'}`,
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 16, /* text-base avoids iOS zoom */
     color: '#111827',
     background: hasError ? '#fef2f2' : '#fafafa',
     boxSizing: 'border-box',
@@ -592,12 +594,13 @@ const styles = {
     card: {
         background: '#ffffff',
         borderRadius: 20,
-        padding: '40px 36px',
         width: '100%',
         maxWidth: 500,
         boxShadow: '0 8px 40px rgba(0,0,0,0.10)',
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
+        maxHeight: '90vh',
+        overflowY: 'auto'
     },
     brand: {
         display: 'flex',
@@ -623,7 +626,7 @@ const styles = {
         lineHeight: 1.2
     },
     brandSub: {
-        fontSize: 10,
+        fontSize: 14,
         color: '#6b7280',
         lineHeight: 1.2
     },
@@ -634,7 +637,7 @@ const styles = {
         margin: '0 0 4px 0'
     },
     sub: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#6b7280',
         margin: '0 0 24px 0'
     },
@@ -653,12 +656,13 @@ const styles = {
     fieldGroup: {
         display: 'flex',
         flexDirection: 'column',
-        gap: 5
+        gap: 8
     },
     label: {
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 600,
-        color: '#374151'
+        color: '#374151',
+        marginBottom: '8px'
     },
     inputWrap: {
         position: 'relative',
@@ -668,7 +672,7 @@ const styles = {
     icon: {
         position: 'absolute',
         left: 12,
-        fontSize: 14,
+        fontSize: 16,
         pointerEvents: 'none',
         zIndex: 1
     },
@@ -681,7 +685,10 @@ const styles = {
         color: '#9ca3af',
         display: 'flex',
         alignItems: 'center',
-        padding: 0
+        justifyContent: 'center',
+        padding: 0,
+        minWidth: 44,
+        minHeight: 44
     },
     hint: {
         fontSize: 11,
@@ -716,12 +723,13 @@ const styles = {
         gap: 6
     },
     btn: {
-        background: 'linear-gradient(135deg, #16a34a, #15803d)',
+        width: '100%',
+        background: 'linear-gradient(135deg, #15803d, #16a34a)',
         color: '#ffffff',
         border: 'none',
         borderRadius: 10,
-        padding: '13px 20px',
-        fontSize: 15,
+        padding: '12px 20px',
+        fontSize: 16,
         fontWeight: 600,
         cursor: 'pointer',
         display: 'flex',

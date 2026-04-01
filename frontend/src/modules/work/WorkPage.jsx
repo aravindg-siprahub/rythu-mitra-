@@ -141,13 +141,13 @@ function FarmerView({ user }) {
           />
           <button 
             onClick={() => setActiveTab('post')}
-            className={`flex-1 py-2.5 text-center font-bold text-sm z-10 transition-colors ${activeTab === 'post' ? 'text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 min-h-[44px] py-2.5 text-center font-bold text-sm z-10 transition-colors ${activeTab === 'post' ? 'text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Need Workers
           </button>
           <button 
             onClick={() => setActiveTab('my_posts')}
-            className={`flex-1 py-2.5 text-center font-bold text-sm z-10 transition-colors ${activeTab === 'my_posts' ? 'text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 min-h-[44px] py-2.5 text-center font-bold text-sm z-10 transition-colors ${activeTab === 'my_posts' ? 'text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
           >
             My Posts
           </button>
@@ -1125,19 +1125,19 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
                   {displayTitle}
                 </h4>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-                  {job.work_type && <span style={{ fontSize: 10, background: '#F1F5F9', color: '#475569', borderRadius: 6, padding: '2px 8px', fontWeight: 600, textTransform: 'uppercase' }}>{job.work_type}</span>}
+                  {job.work_type && <span style={{ fontSize: 14, background: '#F1F5F9', color: '#475569', borderRadius: 6, padding: '2px 8px', fontWeight: 600, textTransform: 'uppercase' }}>{job.work_type}</span>}
                   <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>{getSafeName(job.farmer_name, false)}</span>
                 </div>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0, marginLeft: 12 }}>
               {job.urgency === 'urgent' && (
-                <span style={{ background: '#FEF2F2', color: '#EF4444', fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Urgent</span>
+                <span style={{ background: '#FEF2F2', color: '#EF4444', fontSize: 14, fontWeight: 800, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Urgent</span>
               )}
               <span style={{
                 background: isOpen ? '#DCFCE7' : '#F1F5F9',
                 color: isOpen ? '#166534' : '#64748B',
-                fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em'
+                fontSize: 14, fontWeight: 800, padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em'
               }}>{isOpen ? 'Open' : 'Closed'}</span>
             </div>
           </div>
@@ -1178,7 +1178,7 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
 
               <button onClick={handleToggleStatus} disabled={togglingStatus} style={{ fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 10, cursor: 'pointer', background: isOpen ? '#FEF2F2' : '#F0FDF4', border: 'none', color: isOpen ? '#EF4444' : '#166534', transition: 'all 0.15s ease' }}>{togglingStatus ? '...' : isOpen ? 'Close Job' : 'Reopen'}</button>
               
-              <button onClick={onViewApplicants} style={{ fontSize: 13, color: '#059669', fontWeight: 800, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>View All <span style={{ fontSize: 10 }}>▼</span></button>
+              <button onClick={onViewApplicants} style={{ fontSize: 13, color: '#059669', fontWeight: 800, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>View All <span style={{ fontSize: 14 }}>▼</span></button>
             </div>
           </div>
         </div>
@@ -1195,7 +1195,7 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
             <h4 className="text-lg font-bold text-gray-800 leading-tight">{job.title}</h4>
             <p className="text-xs text-green-600 font-bold mt-1 uppercase tracking-wider">{getSafeName(job.farmer_name, false)}</p>
           </div>
-          <span className={`text-[10px] px-2 py-1 rounded-full font-black uppercase ${isOpen ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+          <span className={`text-sm px-2 py-1 rounded-full font-black uppercase ${isOpen ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
             {job.status}
           </span>
         </div>
@@ -1205,13 +1205,13 @@ function JobCard({ job, isFarmer, user, onViewApplicants, onToggleStatus, onMark
         )}
 
         <div className="flex flex-wrap gap-y-2 gap-x-4 mb-4">
-          <div className="flex items-center gap-1.5 text-[13px] text-slate-500 font-medium">
+          <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
             <span className="text-base">📅</span> {new Date(job.scheduled_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </div>
-          <div className="flex items-center gap-1.5 text-[13px] text-slate-500 font-medium">
+          <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
             <span className="text-base">📍</span> {job.farmer_district}
           </div>
-          <div className="flex items-center gap-1.5 text-[13px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-md">
+          <div className="flex items-center gap-1.5 text-sm text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-md">
             #{job.service_type}
           </div>
         </div>
@@ -1443,19 +1443,19 @@ function SupplierView({ user, laborSearch = '' }) {
                </div>
                <div>
                   <h3 className="text-[15px] font-medium text-gray-900 leading-tight">{profile?.full_name || user?.full_name || 'Worker Name'}</h3>
-                  <p className="text-[12px] text-gray-500">{profile?.district || 'Location not set'}</p>
+                  <p className="text-xs text-gray-500">{profile?.district || 'Location not set'}</p>
                </div>
             </div>
             <div className="flex flex-wrap gap-1 mb-3">
                {(profile?.skills || ['Farm Labour']).map(s => (
-                   <span key={s} className="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full border border-gray-200">{s}</span>
+                   <span key={s} className="bg-gray-100 text-gray-600 text-sm px-2 py-0.5 rounded-full border border-gray-200">{s}</span>
                ))}
             </div>
             <div className="flex items-center gap-1 mb-1 mt-1">
                <span className="text-yellow-400 text-sm">★★★★★</span>
-               <span className="text-[12px] text-gray-600">(4.8 · 23 reviews)</span>
+               <span className="text-xs text-gray-600">(4.8 · 23 reviews)</span>
             </div>
-            <div className="text-[11px] text-gray-500 mb-4 border-b border-gray-100 pb-3 mt-1">
+            <div className="text-sm text-gray-500 mb-4 border-b border-gray-100 pb-3 mt-1">
                Jobs applied: {appliedJobs.length} &nbsp;|&nbsp; Completed: {profile?.completed_jobs || 0}
             </div>
             <button className="w-full border border-gray-300 rounded-md py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => window.dispatchEvent(new CustomEvent('editSupplierProfile'))}>
@@ -1466,15 +1466,15 @@ function SupplierView({ user, laborSearch = '' }) {
          {/* Filters Section */}
          <div className="bg-white md:bg-transparent rounded-xl md:rounded-none border md:border-0 border-gray-200 p-4 md:p-0">
              <div className="flex justify-between items-center mb-4 mt-2">
-                 <h4 className="text-[12px] font-medium text-gray-500 uppercase tracking-wider">Filter Jobs</h4>
-                 <button onClick={clearFilters} className="text-[12px] text-[#166534] hover:underline">Clear all</button>
+                 <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Filter Jobs</h4>
+                 <button onClick={clearFilters} className="text-xs text-[#166534] hover:underline">Clear all</button>
              </div>
              <div className="mb-5">
                  <label className="text-xs font-bold text-gray-700 block mb-2">Job Type</label>
                  <div className="flex flex-wrap gap-2">
                      {['all', 'worker', 'tractor', 'transport', 'sprayer', 'equipment'].map(type => (
                          <button key={type} onClick={() => setFilterTypes(type === 'all' ? [] : [type])}
-                            className={`px-3 py-1 rounded-md text-[13px] border transition-colors ${(filterTypes.length === 0 && type === 'all') || filterTypes.includes(type) ? 'bg-[#166534] text-white border-[#166534]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}>
+                            className={`px-3 py-1 rounded-md text-sm border transition-colors ${(filterTypes.length === 0 && type === 'all') || filterTypes.includes(type) ? 'bg-[#166534] text-white border-[#166534]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}>
                             {type.charAt(0).toUpperCase() + type.slice(1)}
                          </button>
                      ))}
@@ -1483,10 +1483,10 @@ function SupplierView({ user, laborSearch = '' }) {
              <div className="mb-5">
                  <label className="text-xs font-bold text-gray-700 block mb-2">Location</label>
                  <input type="text" placeholder="Search village or district..." value={filterLocation} onChange={e => setFilterLocation(e.target.value)}
-                    className="w-full text-[13px] border border-[1.5px] border-gray-300 rounded-md py-2 px-3 mb-2 outline-none focus:border-[#166534] bg-white text-gray-900" style={{ boxShadow: 'none' }} />
+                    className="w-full text-sm border border-[1.5px] border-gray-300 rounded-md py-2 px-3 mb-2 outline-none focus:border-[#166534] bg-white text-gray-900" style={{ boxShadow: 'none' }} />
                  <label className="flex items-center gap-2 cursor-pointer mt-2 w-max">
                     <input type="checkbox" checked={nearMe} onChange={e => setNearMe(e.target.checked)} className="accent-[#166534] w-4 h-4 cursor-pointer" />
-                    <span className="text-[13px] text-gray-700">Near me</span>
+                    <span className="text-sm text-gray-700">Near me</span>
                  </label>
              </div>
              <div className="mb-5">
@@ -1494,7 +1494,7 @@ function SupplierView({ user, laborSearch = '' }) {
                  <div className="flex flex-wrap gap-2">
                      {['any', 'today', 'week', 'month'].map(d => (
                          <button key={d} onClick={() => setFilterDate(d)}
-                            className={`px-3 py-1 rounded-md text-[13px] border transition-colors ${filterDate === d ? 'bg-[#166534] text-white border-[#166534]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}>
+                            className={`px-3 py-1 rounded-md text-sm border transition-colors ${filterDate === d ? 'bg-[#166534] text-white border-[#166534]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}>
                             {d === 'any' ? 'Any date' : d === 'today' ? 'Today' : d === 'week' ? 'This week' : 'This month'}
                          </button>
                      ))}
@@ -1505,7 +1505,7 @@ function SupplierView({ user, laborSearch = '' }) {
                  <div className="flex flex-wrap gap-2">
                      {['any', '300-500', '500-800', '800+'].map(p => (
                          <button key={p} onClick={() => setFilterPay(p)}
-                            className={`px-3 py-1 rounded-md text-[13px] border transition-colors ${filterPay === p ? 'bg-[#166534] text-white border-[#166534]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}>
+                            className={`px-3 py-1 rounded-md text-sm border transition-colors ${filterPay === p ? 'bg-[#166534] text-white border-[#166534]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}>
                             {p === 'any' ? 'Any' : p === '800+' ? '₹800+/day' : `₹${p}/day`}
                          </button>
                      ))}
@@ -1528,7 +1528,7 @@ function SupplierView({ user, laborSearch = '' }) {
                       </button>
                       <button onClick={() => { setActiveTab('my_apps'); setSelectedJob(null); }}
                           className={`py-4 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'my_apps' ? 'border-[#166534] text-[#166534]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                          My Applications <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">{appliedJobs.length}</span>
+                          My Applications <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full text-sm">{appliedJobs.length}</span>
                       </button>
                   </div>
                   <div className="relative flex items-center gap-3" ref={notifRef}>
@@ -1541,13 +1541,13 @@ function SupplierView({ user, laborSearch = '' }) {
                               <h5 className="px-4 py-2 text-xs font-bold text-gray-800 border-b border-gray-100">Notifications</h5>
                               {notifications.length > 0 ? notifications.map(n => (
                                   <div key={n.id} className="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer" onClick={() => { setSelectedJob(n); setShowNotifDropdown(false); }}>
-                                     <p className="text-[13px] text-gray-800 font-medium truncate">{n.title}</p>
-                                     <p className="text-[11px] text-gray-500">New job in {n.farmer_district}</p>
+                                     <p className="text-sm text-gray-800 font-medium truncate">{n.title}</p>
+                                     <p className="text-sm text-gray-500">New job in {n.farmer_district}</p>
                                   </div>
                               )) : (
-                                  <div className="px-4 py-4 text-[13px] text-gray-500 text-center">No new notifications</div>
+                                  <div className="px-4 py-4 text-sm text-gray-500 text-center">No new notifications</div>
                               )}
-                              <button className="w-full text-center py-2 text-[12px] text-[#166534] hover:bg-gray-50">Mark all as read</button>
+                              <button className="w-full text-center py-2 text-xs text-[#166534] hover:bg-gray-50">Mark all as read</button>
                           </div>
                       )}
                   </div>
@@ -1560,9 +1560,9 @@ function SupplierView({ user, laborSearch = '' }) {
                           <h2 className="text-[16px] font-medium text-gray-900 hidden md:block">Farm Jobs Near You</h2>
                       </div>
                       <div className="flex items-center gap-3">
-                          <span className="text-[12px] text-gray-500 whitespace-nowrap">{filteredPosts.length} jobs</span>
+                          <span className="text-xs text-gray-500 whitespace-nowrap">{filteredPosts.length} jobs</span>
                           <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}
-                             className="text-[12px] bg-transparent border-none text-gray-600 font-medium outline-none cursor-pointer w-[120px] truncate text-right">
+                             className="text-xs bg-transparent border-none text-gray-600 font-medium outline-none cursor-pointer w-[120px] truncate text-right">
                               <option>Latest</option>
                               <option>Pay: High to Low</option>
                               <option>Closest</option>
@@ -1574,7 +1574,7 @@ function SupplierView({ user, laborSearch = '' }) {
 
           {activeTab === 'browse' && newJobs.length > 0 && !bannerDismissed && (
              <div className="bg-amber-50 border-b border-amber-100 w-full px-4 py-2 flex items-center justify-between cursor-pointer" onClick={() => setBannerDismissed(true)}>
-                 <span className="text-[13px] text-amber-800 font-medium">{newJobs.length} new jobs posted in your area — tap to refresh</span>
+                 <span className="text-sm text-amber-800 font-medium">{newJobs.length} new jobs posted in your area — tap to refresh</span>
                  <button className="text-amber-600 hover:text-amber-800 text-lg">&times;</button>
              </div>
           )}
@@ -1585,7 +1585,7 @@ function SupplierView({ user, laborSearch = '' }) {
                      <div className="flex flex-col items-center justify-center py-20 text-center">
                          <div className="text-6xl mb-4">🌾</div>
                          <h3 className="text-[16px] font-medium text-gray-900 mb-1">No jobs found in this area</h3>
-                         <p className="text-[13px] text-gray-500 mb-6 max-w-[250px]">Try removing some filters or check back tomorrow.</p>
+                         <p className="text-sm text-gray-500 mb-6 max-w-[250px]">Try removing some filters or check back tomorrow.</p>
                          <button onClick={clearFilters} className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">Clear filters</button>
                      </div>
                  ) : (
@@ -1608,7 +1608,7 @@ function SupplierView({ user, laborSearch = '' }) {
                      <div className="flex flex-col items-center justify-center py-20 text-center">
                          <div className="text-6xl mb-4">📝</div>
                          <h3 className="text-[16px] font-medium text-gray-900 mb-1">You haven't applied to any jobs yet</h3>
-                         <p className="text-[13px] text-gray-500 mb-6">Browse jobs and tap Apply Now to get started.</p>
+                         <p className="text-sm text-gray-500 mb-6">Browse jobs and tap Apply Now to get started.</p>
                          <button onClick={() => setActiveTab('browse')} className="bg-[#166534] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-green-800 shadow-sm">Browse Jobs</button>
                      </div>
                  ) : (
@@ -1723,7 +1723,7 @@ function JobCardSupplier({ job, isSelected, onClick, isApplied, onApply, workerL
             <span style={{
               marginTop: 4, display: 'inline-block',
               background: '#FEF2F2', color: '#EF4444', 
-              fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 6,
+              fontSize: 14, fontWeight: 800, padding: '4px 8px', borderRadius: 6,
               textTransform: 'uppercase', letterSpacing: '0.05em'
             }}>Urgent</span>
           )}
@@ -1871,8 +1871,8 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
                 <div className="flex-1">
                     <h3 className="text-[16px] font-medium text-gray-900 leading-tight">{job.auto_title || job.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[11px] text-gray-500">Posted {timeStr}</span>
-                        {isUrgent && <span className="bg-[#FEE2E2] text-[#991B1B] text-[10px] uppercase font-bold px-1.5 rounded-sm">Urgent</span>}
+                        <span className="text-sm text-gray-500">Posted {timeStr}</span>
+                        {isUrgent && <span className="bg-[#FEE2E2] text-[#991B1B] text-sm uppercase font-bold px-1.5 rounded-sm">Urgent</span>}
                     </div>
                 </div>
             </div>
@@ -2052,7 +2052,7 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
 
                         {/* Status pill or Apply logic */}
                         {!hasAppliedStatus ? (
-                            <button className="w-full bg-[#166534] text-white py-2 rounded-md font-medium text-[13px] hover:bg-green-800 transition-colors mb-2" onClick={onApply}>
+                            <button className="w-full bg-[#166534] text-white py-2 rounded-md font-medium text-sm hover:bg-green-800 transition-colors mb-2" onClick={onApply}>
                                 Apply to see contact details
                             </button>
                         ) : (
@@ -2081,20 +2081,20 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
                 )}
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-2 mb-6 bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
-                    <div><p className="text-[11px] text-gray-500 mb-0.5">Job Type</p><p className="text-[13px] font-medium text-gray-900 capitalize">{job.service_type || 'Worker'}</p></div>
-                    <div><p className="text-[11px] text-gray-500 mb-0.5">Date Required</p><p className="text-[13px] font-medium text-gray-900">{new Date(job.scheduled_date).toLocaleDateString()}</p></div>
-                    <div><p className="text-[11px] text-gray-500 mb-0.5">Workers Need</p><p className="text-[13px] font-medium text-gray-900">{job.workers_needed || job.units || 1}</p></div>
-                    <div><p className="text-[11px] text-gray-500 mb-0.5">Pay Per Day</p><p className="text-[13px] font-medium text-gray-900">{job.daily_rate ? `₹${job.daily_rate}` : 'Negotiable'}</p></div>
-                    <div><p className="text-[11px] text-gray-500 mb-0.5">Location</p><p className="text-[13px] font-medium text-gray-900 truncate pr-2" title={job.farmer_district}>{job.farmer_district}</p></div>
-                    <div><p className="text-[11px] text-gray-500 mb-0.5">Posted</p><p className="text-[13px] font-medium text-gray-900">{timeStr}</p></div>
+                    <div><p className="text-sm text-gray-500 mb-0.5">Job Type</p><p className="text-sm font-medium text-gray-900 capitalize">{job.service_type || 'Worker'}</p></div>
+                    <div><p className="text-sm text-gray-500 mb-0.5">Date Required</p><p className="text-sm font-medium text-gray-900">{new Date(job.scheduled_date).toLocaleDateString()}</p></div>
+                    <div><p className="text-sm text-gray-500 mb-0.5">Workers Need</p><p className="text-sm font-medium text-gray-900">{job.workers_needed || job.units || 1}</p></div>
+                    <div><p className="text-sm text-gray-500 mb-0.5">Pay Per Day</p><p className="text-sm font-medium text-gray-900">{job.daily_rate ? `₹${job.daily_rate}` : 'Negotiable'}</p></div>
+                    <div><p className="text-sm text-gray-500 mb-0.5">Location</p><p className="text-sm font-medium text-gray-900 truncate pr-2" title={job.farmer_district}>{job.farmer_district}</p></div>
+                    <div><p className="text-sm text-gray-500 mb-0.5">Posted</p><p className="text-sm font-medium text-gray-900">{timeStr}</p></div>
                 </div>
                 <div className="mb-6">
-                    <h5 className="text-[12px] font-medium text-gray-500 uppercase tracking-wider mb-2">About this job</h5>
-                    <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description || 'No additional description provided by the farmer. Contact the farmer for more details regarding the exact nature of the work.'}</p>
+                    <h5 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">About this job</h5>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description || 'No additional description provided by the farmer. Contact the farmer for more details regarding the exact nature of the work.'}</p>
                 </div>
                 <div className="mb-6">
-                    <h5 className="text-[12px] font-medium text-gray-500 uppercase tracking-wider mb-2">What you need</h5>
-                    <ul className="list-disc pl-4 text-[13px] text-gray-700 space-y-1 marker:text-gray-400">
+                    <h5 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">What you need</h5>
+                    <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1 marker:text-gray-400">
                         <li>Relevant experience in {job.service_type || 'farm labor'}</li>
                         <li>Availability on the specified date</li>
                         <li>Ability to perform sustained physical work in fields</li>
@@ -2106,9 +2106,9 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex gap-3">
                         <div className="bg-white rounded-full w-6 h-6 flex items-center justify-center text-green-600 border border-green-200 shrink-0">✓</div>
                         <div>
-                            <p className="text-[13px] font-medium text-green-800">Application sent</p>
-                            <p className="text-[12px] text-green-700 mt-0.5">The farmer will contact you if selected.</p>
-                            <p className="text-[11px] text-green-600/70 mt-1">Applied on {new Date().toLocaleDateString()}</p>
+                            <p className="text-sm font-medium text-green-800">Application sent</p>
+                            <p className="text-xs text-green-700 mt-0.5">The farmer will contact you if selected.</p>
+                            <p className="text-sm text-green-600/70 mt-1">Applied on {new Date().toLocaleDateString()}</p>
                         </div>
                     </div>
                 ) : (
@@ -2116,7 +2116,7 @@ function JobDetailPanel({ job, onClose, isApplied, onApply, status, farmerProfil
                         <button className="w-full bg-[#166534] text-white h-[44px] rounded-lg font-medium text-[15px] hover:bg-green-800 shadow-sm transition-colors flex items-center justify-center gap-2" onClick={onApply}>
                             Apply Now <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                         </button>
-                        <p className="text-[11px] text-gray-400 text-center mt-2 font-medium">Your profile will be shared with the farmer</p>
+                        <p className="text-sm text-gray-400 text-center mt-2 font-medium">Your profile will be shared with the farmer</p>
                     </>
                 )}
             </div>

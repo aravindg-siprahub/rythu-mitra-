@@ -28,7 +28,7 @@ export default function LaborMarketHeader({ user, searchQuery, onSearchChange })
               <h1 className="text-base sm:text-xl font-black text-slate-900 tracking-tight uppercase truncate">
                 Labor Market
               </h1>
-              <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
+              <p className="text-sm sm:text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
                 Jobs · Apply · Hire
               </p>
             </div>
@@ -65,14 +65,14 @@ export default function LaborMarketHeader({ user, searchQuery, onSearchChange })
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2 items-center">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 w-full sm:w-auto sm:mr-1">
+          <span className="text-sm font-bold uppercase tracking-wider text-slate-400 w-full sm:w-auto sm:mr-1">
             Rythu tools
           </span>
           {TOOLS.map((t) => (
             <Link
               key={t.to}
               to={t.to}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-gradient-to-br from-white/90 to-slate-50/90 px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold text-slate-700 shadow-sm hover:border-emerald-300/60 hover:shadow-md hover:shadow-emerald-500/10 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-gradient-to-br from-white/90 to-slate-50/90 px-2.5 py-1.5 text-sm sm:text-xs font-semibold text-slate-700 shadow-sm hover:border-emerald-300/60 hover:shadow-md hover:shadow-emerald-500/10 transition-all"
             >
               <span className="text-sm" aria-hidden>{t.emoji}</span>
               <span>{t.label}</span>

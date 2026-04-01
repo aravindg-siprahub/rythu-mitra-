@@ -63,7 +63,7 @@ export default function SeasonBanner({ selectedSeason, onSeasonChange }) {
                         {season.name}
                     </span>
                     <span
-                        className="ml-2 text-[12px] font-normal"
+                        className="ml-2 text-xs font-normal"
                         style={{ color: THEME.colors.textMuted }}
                     >
                         {season.months}
@@ -74,7 +74,7 @@ export default function SeasonBanner({ selectedSeason, onSeasonChange }) {
             {/* Center: Best crops this season */}
             <div className="hidden md:flex items-center gap-2">
                 <span
-                    className="text-[12px] font-medium"
+                    className="text-xs font-medium"
                     style={{ color: THEME.colors.textMuted }}
                 >
                     Best crops this season:
@@ -82,7 +82,7 @@ export default function SeasonBanner({ selectedSeason, onSeasonChange }) {
                 {season.crops.slice(0, 3).map((crop, i) => (
                     <span
                         key={i}
-                        className="px-2 py-0.5 rounded-full text-[12px] border bg-white"
+                        className="px-2 py-0.5 rounded-full text-xs border bg-white"
                         style={{
                             borderColor: `${season.color}66`,
                             color: season.color,
@@ -103,7 +103,7 @@ export default function SeasonBanner({ selectedSeason, onSeasonChange }) {
                             <button
                                 key={s}
                                 onClick={() => onSeasonChange(s)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded transition-colors ${
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                                     isSelected
                                         ? 'bg-[#166534] text-white'
                                         : 'bg-transparent text-gray-600 hover:bg-gray-50'

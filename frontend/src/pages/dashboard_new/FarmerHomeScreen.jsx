@@ -1,379 +1,248 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../utils/apiService';
-import { useWeather } from '../../modules/weather/hooks/useWeather';
-import { 
-  getSavedLocation, 
-  isLocationFresh,
-  cleanLocationName
-} from '../../utils/locationService';
+import { useDashboard } from '../../hooks/useDashboard';
+import { cleanLocationName } from '../../utils/locationService';
+import { getWeatherEmoji } from '../../utils/openWeather';
 import LocationPopup from './LocationPopup';
-import { fetchOpenWeather, getWeatherEmoji } from '../../utils/openWeather';
 
-// ─── Design tokens ─────────────────────────────────────────────
-const RM = {
-    green:       '#16a34a',
-    greenLight:  '#f0fdf4',
-    greenBorder: '#bbf7d0',
-    greenMid:    '#15803d',
-    amber:       '#d97706',
-    amberLight:  '#fffbeb',
-    blue:        '#1d4ed8',
-    blueLight:   '#eff6ff',
-    red:         '#dc2626',
-    redLight:    '#fef2f2',
-    purple:      '#7c3aed',
-    purpleLight: '#f5f3ff',
-    white:       '#ffffff',
-    gray50:      '#f9fafb',
-    gray100:     '#f3f4f6',
-    gray200:     '#e5e7eb',
-    gray400:     '#9ca3af',
-    gray600:     '#6b7280',
-    gray900:     '#111827',
-    dark:        '#1a1a1a',
-};
-
-// ─── Utilities ─────────────────────────────────────────────────
-function getGreeting() {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good morning,';
-    if (h < 17) return 'Good afternoon,';
-    return 'Good evening,';
+/**
+ * Native helper to format time ago (replaces date-fns)
+ */
+function formatDistanceToNow(date) {
+  if (!date) return 'just now';
+  const diff = Date.now() - new Date(date).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
+  return `${Math.floor(minutes / 1440)}d`;
 }
 
-function getCurrentSeason() {
-    const m = new Date().getMonth() + 1;
-    if (m >= 11 || m <= 2) return 'Rabi Season';
-    if (m >= 3  && m <= 5) return 'Zaid Season';
-    return 'Kharif Season';
+// ─── Shared Components ─────────────────────────────────────────
+
+function SectionHeader({ title, sub, onAction, actionLabel }) {
+  return (
+    <div className="flex justify-between items-end mb-4 px-1">
+      <div>
+        <p className="text-[10px] font-bold tracking-[1.5px] text-gray-400 uppercase mb-1">
+          {title}
+        </p>
+        {sub && <p className="text-xs text-gray-500">{sub}</p>}
+      </div>
+      {onAction && (
+        <button onClick={onAction} className="text-xs font-semibold text-green-600 hover:underline">
+          {actionLabel || 'View all →'}
+        </button>
+      )}
+    </div>
+  );
 }
 
-// ─── Advisory labels ───────────────────────────────────────────
-const ADVISORY_LABELS = {
-    weather_advisory:    { label: 'Weather Alert', color: RM.blue,   bg: RM.blueLight,   dot: RM.blue   },
-    crop_recommendation: { label: 'Crop Tip',      color: RM.green,  bg: RM.greenLight,  dot: RM.green  },
-    market_price:        { label: 'Market Update', color: RM.amber,  bg: RM.amberLight,  dot: RM.amber  },
-    disease_alert:       { label: 'Disease Alert', color: RM.red,    bg: RM.redLight,    dot: RM.red    },
-    government_scheme:   { label: 'Scheme',        color: RM.purple, bg: RM.purpleLight, dot: RM.purple },
-};
+function Skeleton({ className }) {
+  return <div className={`animate-pulse bg-gray-200 rounded-xl ${className}`} />;
+}
 
-// ─── Quick action cards (routes from App.js audit) ────────────
-const ACTIONS = [
-    { emoji: '🌱', label: 'Crop AI',  desc: 'Best crop for your soil', route: '/crop',    iconBg: RM.greenLight  },
-    { emoji: '🔬', label: 'Disease',  desc: 'Scan your crop photo',    route: '/disease', iconBg: RM.redLight    },
-    { emoji: '📊', label: 'Market',   desc: 'Live APMC prices',        route: '/market',  iconBg: RM.amberLight  },
-    { emoji: '🌤️', label: 'Weather',  desc: '7-day forecast',          route: '/weather', iconBg: RM.blueLight   },
-    { emoji: '📋', label: 'Booking',  desc: 'Equipment, experts, supplies', route: '/booking', iconBg: RM.purpleLight },
-];
+function ErrorSection({ message, onRetry }) {
+  return (
+    <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
+      <p className="text-red-600 text-sm font-medium">{message}</p>
+      {onRetry && (
+        <button onClick={onRetry} className="text-red-700 text-xs underline mt-2 hover:text-red-800 transition-colors">
+          Tap to retry
+        </button>
+      )}
+    </div>
+  );
+}
 
-// ─── Sub-component: HeroSection ────────────────────────────────
-function HeroSection({ greeting, name, district, temp, condition, weatherEmoji, isLoading, isError, onRetry, onChangeLocation }) {
-    return (
-        <div style={styles.hero}>
-            <img
-                src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1400&q=80"
-                alt="paddy field"
-                style={styles.heroImg}
-            />
-            <div style={styles.heroOverlay} />
-            <div style={styles.heroContent}>
-                <div style={styles.heroTop}>
-                    <div>
-                        <p style={styles.greeting}>{greeting}</p>
-                        <h1 style={styles.farmerName}>{name} 👋</h1>
-                        <p style={styles.location}>
-                            📍 {district}
-                            <button 
-                                onClick={onChangeLocation}
-                                style={{
-                                    background: 'rgba(255,255,255,0.2)',
-                                    border: '1px solid rgba(255,255,255,0.3)',
-                                    borderRadius: 8,
-                                    color: 'rgba(255,255,255,0.9)',
-                                    fontSize: 10,
-                                    fontWeight: 600,
-                                    padding: '2px 8px',
-                                    cursor: 'pointer',
-                                    marginLeft: 8,
-                                }}
-                            >
-                                Change
-                            </button>
-                        </p>
-                    </div>
-                    <WeatherChip
-                        temp={temp}
-                        condition={condition}
-                        weatherEmoji={weatherEmoji}
-                        isLoading={isLoading}
-                        isError={isError}
-                        onRetry={onRetry}
-                    />
-                </div>
-                <div style={styles.heroBottom}>
-                    <span style={styles.seasonBadge}>🌾 {getCurrentSeason()}</span>
-                    <span style={styles.seasonBadge}>
-                        {new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
-                    </span>
-                </div>
+// ─── SECTION 1: HERO HEADER ────────────────────────────────────
+function HeroSection({ user, location, weather, loading, onChangeLocation }) {
+  const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Farmer';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const displayLoc = cleanLocationName(location);
+
+  return (
+    <div className="relative h-[260px] overflow-hidden rounded-b-[48px] shadow-2xl">
+      <img
+        src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1400&q=80"
+        alt="Farm Field"
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+      <div className="absolute inset-0 p-8 flex flex-col justify-between">
+        <div className="flex justify-between items-start">
+          <div className="max-w-[70%]">
+            <p className="text-white/80 text-sm font-medium mb-1 drop-shadow-md">{greeting},</p>
+            <h1 className="text-white text-3xl font-bold tracking-tight drop-shadow-lg leading-tight">{name} 👋</h1>
+            <div className="flex items-center gap-2 mt-3 group cursor-pointer" onClick={onChangeLocation}>
+              <div className="bg-white/20 backdrop-blur-md p-1.5 rounded-full">
+                <span className="text-sm">📍</span>
+              </div>
+              <span className="text-white/95 text-sm font-semibold drop-shadow-md">{displayLoc || 'Detecting Location...'}</span>
+              <span className="text-white/50 text-[10px] group-hover:text-white transition-colors">Edit</span>
             </div>
-        </div>
-    );
-}
-
-// ─── Sub-component: WeatherChip ────────────────────────────────
-function WeatherChip({ temp, condition, weatherEmoji, isLoading, isError, onRetry }) {
-    return (
-        <div style={styles.weatherChip}>
-            {isLoading ? (
-                <>
-                    <div style={styles.skeleton} />
-                    <div style={{ ...styles.skeleton, width: 40, marginTop: 4 }} />
-                </>
-            ) : isError ? (
-                <div style={{ textAlign: 'center' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, margin: 0 }}>Unavailable</p>
-                    <button onClick={onRetry} style={styles.retryBtn}>Retry</button>
-                </div>
+          </div>
+          <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[30px] p-5 flex flex-col items-center min-w-[110px] shadow-xl">
+            {loading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Skeleton className="w-12 h-12 bg-white/10" />
+                <Skeleton className="w-8 h-4 bg-white/10" />
+              </div>
             ) : (
-                <>
-                    <span style={{ fontSize: 26 }}>{weatherEmoji || '🌤️'}</span>
-                    <div>
-                        <p style={styles.tempText}>{temp !== null && temp !== undefined ? `${Math.round(temp)}°` : '—°'}</p>
-                        <p style={styles.condText}>{condition || 'Clear'}</p>
-                    </div>
-                </>
+              <>
+                <span className="text-4xl mb-1 filter drop-shadow-md">{getWeatherEmoji(weather?.condition)}</span>
+                <span className="text-white text-3xl font-bold leading-none">{weather?.temperature ?? '—'}°</span>
+                <span className="text-white/60 text-[10px] uppercase font-black tracking-[1.5px] mt-1">{weather?.condition || 'Clear'}</span>
+              </>
             )}
+          </div>
         </div>
-    );
+        <div className="flex gap-2">
+          <div className="bg-green-500/90 backdrop-blur-md text-white text-[10px] font-black px-4 py-2 rounded-2xl uppercase tracking-[2px] border border-green-400/30 flex items-center gap-2 shadow-lg">
+            <span className="animate-pulse">🌾</span> {new Date().getMonth() > 9 || new Date().getMonth() < 2 ? 'Rabi Season' : 'Kharif Season'}
+          </div>
+          <div className="bg-white/10 backdrop-blur-md text-white text-[10px] font-black px-4 py-2 rounded-2xl uppercase tracking-[2px] border border-white/20 shadow-lg">
+            📅 {new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-// ─── Sub-component: QuickActions ───────────────────────────────
-function QuickActions({ actions, navigate }) {
-    return (
-        <div>
-            <p style={styles.sectionLabel}>QUICK ACTIONS</p>
-            <div style={styles.actionsGrid}>
-                {actions.map((a) => (
-                    <button key={a.route} style={styles.actionCard}
-                        onClick={() => navigate(a.route)}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.borderColor = '#16a34a';
-                            e.currentTarget.style.background  = '#f0fdf4';
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.borderColor = '#e5e7eb';
-                            e.currentTarget.style.background  = '#ffffff';
-                        }}
-                    >
-                        <div style={{ ...styles.actionIcon, background: a.iconBg }}>
-                          <span style={{ fontSize: 22 }}>{a.emoji}</span>
-                        </div>
-                        <div style={styles.actionTextWrap}>
-                          <span style={styles.actionLabel}>{a.label}</span>
-                          <span style={styles.actionDesc}>{a.desc}</span>
-                        </div>
-                    </button>
-                ))}
-            </div>
+// ─── SECTION 2: WEATHER ALERT BANNER ───────────────────────────
+function WeatherAlerts({ weather }) {
+  const alerts = useMemo(() => {
+    if (!weather) return [];
+    const list = [];
+    const temp = weather.temperature;
+    const humidity = weather.humidity;
+    const wind = weather.wind_speed;
+
+    if (temp > 36) list.push({
+      type: 'danger', icon: '🌡️', title: `Heat stress risk — ${temp}°C`, action: 'Irrigate before 7am'
+    });
+    if (humidity < 30) list.push({
+      type: 'warning', icon: '💧', title: 'Low humidity — crops need water', action: 'Check soil moisture today'
+    });
+    if (wind > 40) list.push({
+      type: 'warning', icon: '🌬️', title: `High winds — ${wind} km/h`, action: 'Avoid spraying pesticides'
+    });
+    if (weather.condition?.toLowerCase().includes('rain')) list.push({
+      type: 'info', icon: '🌧️', title: 'Rain expected', action: 'Ensure proper drainage'
+    });
+    return list;
+  }, [weather]);
+
+  if (alerts.length === 0) return null;
+
+  return (
+    <div className="px-6 mt-[-30px] relative z-20 space-y-3">
+      {alerts.map((alert, i) => (
+        <div key={i} className={`flex items-center gap-4 p-5 rounded-[24px] border shadow-xl backdrop-blur-xl transition-all hover:scale-[1.02] ${
+          alert.type === 'danger' ? 'bg-red-50/95 border-red-100 text-red-900' : 
+          alert.type === 'warning' ? 'bg-amber-50/95 border-amber-100 text-amber-900' : 
+          'bg-blue-50/95 border-blue-100 text-blue-900'
+        }`}>
+          <div className={`p-3 rounded-2xl ${
+            alert.type === 'danger' ? 'bg-red-500/10' : 
+            alert.type === 'warning' ? 'bg-amber-500/10' : 
+            'bg-blue-500/10'
+          }`}>
+            <span className="text-2xl">{alert.icon}</span>
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-black uppercase tracking-tight">{alert.title}</h4>
+            <p className="text-xs font-medium opacity-80 mt-0.5">{alert.action}</p>
+          </div>
         </div>
-    );
+      ))}
+    </div>
+  );
 }
 
-// ─── Sub-component: WeatherStrip ───────────────────────────────
-function WeatherStrip({ weather, loading, farmerLocation, locationLabel }) {
-  const fmt = (val, suffix) =>
-    val != null ? `${val}${suffix}` : '—';
+// ─── SECTION 3: WEATHER STRIP ──────────────────────────────────
+function WeatherStrip({ weather, loading, lastUpdated }) {
+  if (loading) return (
+    <div className="px-6 grid grid-cols-2 gap-4 mt-8">
+      <Skeleton className="h-28 w-full shadow-sm" />
+      <Skeleton className="h-28 w-full shadow-sm" />
+    </div>
+  );
 
   const items = [
-    { 
-      emoji: '🌡️', 
-      val: fmt(weather?.temperature, '°C'), 
-      label: 'Temperature',
-      sub: weather?.temp_max != null 
-        ? `H:${weather.temp_max}° L:${weather.temp_min}°` 
-        : null,
-    },
-    { 
-      emoji: '💧', 
-      val: fmt(weather?.humidity, '%'),    
-      label: 'Humidity',
-      sub: weather?.humidity >= 80 ? '⚠️ Fungal risk high'
-         : weather?.humidity >= 60 ? '✓ Good for most crops'
-         : weather?.humidity >= 40 ? '✓ Comfortable'
-         : '⚠️ Too dry — irrigate',
-    },
-    { 
-      emoji: '💨', 
-      val: fmt(weather?.wind_speed, ' km/h'), 
-      label: 'Wind',
-      sub: weather?.wind_speed <= 5  ? '✓ Good for spraying'
-         : weather?.wind_speed <= 15 ? '⚠️ Avoid spraying'
-         : '⚠️ No spraying today',
-    },
-    { 
-      emoji: '🌧️', 
-      val: fmt(weather?.rainfall, ' mm'),  
-      label: 'Rainfall',
-      sub: weather?.rainfall > 0 
-        ? `✓ Received today`
-        : 'No rain last hour',
-    },
-    { 
-      emoji: '👁️', 
-      val: weather?.visibility != null 
-           ? `${weather.visibility} km` : '—', 
-      label: 'Visibility',
-      sub: weather?.visibility >= 10 ? '✓ Excellent'
-         : weather?.visibility >= 5  ? '~ Moderate'
-         : '⚠️ Poor',
-    },
-    { 
-      emoji: '🌡️', 
-      val: fmt(weather?.pressure, ' mb'),  
-      label: 'Pressure',
-      sub: null,
-    },
+    { label: 'Humidity', val: `${weather?.humidity || 0}%`, sub: weather?.humidity > 70 ? '⚠️ High' : '✓ Normal', icon: '💧', color: 'text-blue-600' },
+    { label: 'Wind Speed', val: `${weather?.wind_speed || 0} km/h`, sub: weather?.wind_speed > 25 ? '⚠️ No Spray' : '✓ Safe', icon: '🌬️', color: 'text-amber-600' },
+    { label: 'Visibility', val: `${weather?.visibility || 0} km`, sub: weather?.visibility > 5 ? '✓ Best' : '⚠️ Low', icon: '👁️', color: 'text-indigo-600' },
+    { label: 'Pressure', val: `${weather?.pressure || 0} mb`, sub: 'Atmospheric', icon: '📈', color: 'text-gray-600' },
   ];
 
   return (
-    <div style={styles.weatherStrip}>
-      <div style={styles.weatherStripHeader}>
-        <div>
-          <p style={styles.weatherStripTitle}>
-            Today's Conditions
-          </p>
-          <p style={styles.weatherStripSub}>
-            {locationLabel || weather?.city || 'Your Location'}
-          </p>
-        </div>
-        <span style={{ fontSize: 32 }}>
-          {getWeatherEmoji(weather?.condition)}
-        </span>
-      </div>
-
-      {loading && (
-        <p style={{ fontSize: 13, color: '#9ca3af', 
-                    margin: '8px 0' }}>
-          Loading weather data...
-        </p>
-      )}
-
-      <div className="weather-grid-6" style={styles.weatherGrid6}>
-        {items.map((item) => (
-          <div key={item.label} style={styles.weatherItem}>
-            <span style={{ fontSize: 18 }}>{item.emoji}</span>
-            <p style={styles.weatherVal}>{item.val}</p>
-            <p style={styles.weatherLabel}>{item.label}</p>
-            {item.sub && (
-              <p style={styles.weatherSub}>{item.sub}</p>
-            )}
+    <div className="px-6 mt-8">
+      <SectionHeader 
+        title="Current Conditions" 
+        sub={`Updated ${lastUpdated ? formatDistanceToNow(new Date(lastUpdated)) : 'refreshing...'} ago`} 
+      />
+      <div className="bg-white border border-gray-100 rounded-[32px] p-7 shadow-sm grid grid-cols-2 gap-y-8 gap-x-6">
+        {items.map(item => (
+          <div key={item.label} className="flex items-start gap-4">
+            <div className={`p-3 rounded-2xl bg-gray-50 ${item.color}`}>
+              <span className="text-xl">{item.icon}</span>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[1.5px] mb-1">{item.label}</p>
+              <p className="text-xl font-black text-gray-900 leading-none">{item.val}</p>
+              <p className={`text-[10px] font-black uppercase mt-1.5 tracking-wider ${item.sub.includes('⚠️') ? 'text-amber-500' : 'text-green-500'}`}>
+                {item.sub}
+              </p>
+            </div>
           </div>
         ))}
       </div>
-
-      {weather?.updatedAt && (
-        <p style={{
-          fontSize: 11,
-          color: '#9ca3af',
-          textAlign: 'right',
-          marginTop: 12,
-          borderTop: '1px solid #f3f4f6',
-          paddingTop: 8,
-        }}>
-          Updated {Math.round(
-            (Date.now() - new Date(weather.updatedAt).getTime()) 
-            / 60000
-          )} min ago
-        </p>
-      )}
     </div>
   );
 }
 
+// ─── SECTION 4: MANDI PRICES ───────────────────────────────────
+function MandiPrices({ prices, loading, error, onRetry }) {
+  if (loading) return (
+    <div className="px-6 mt-10 space-y-4">
+      <SectionHeader title="Live Mandi Prices" />
+      <Skeleton className="h-20 w-full rounded-[24px]" />
+      <Skeleton className="h-20 w-full rounded-[24px]" />
+    </div>
+  );
 
-// ─── Sub-component: AdvisoryStrip ──────────────────────────────
-function AdvisoryStrip({ advisories }) {
-    function timeAgo(dateStr) {
-        if (!dateStr) return '';
-        const diff = Date.now() - new Date(dateStr).getTime();
-        const h = Math.floor(diff / 3600000);
-        if (h < 1)  return 'Just now';
-        if (h < 24) return `${h}h ago`;
-        return `${Math.floor(h / 24)}d ago`;
-    }
+  if (error) return <div className="px-6 mt-10"><ErrorSection message={error} onRetry={onRetry} /></div>;
 
-    return (
-        <div>
-            <p style={styles.sectionLabel}>RECENT ADVISORIES</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {advisories.map((adv, i) => {
-                    // AdvisorySection maps: category, text/message, time/created_at
-                    const type = adv.type || adv.category || '';
-                    const meta = ADVISORY_LABELS[type] ??
-                        { label: 'Advisory', color: RM.green, bg: RM.greenLight, dot: RM.green };
-                    const text = adv.text || adv.message || adv.content || adv.title || '';
-                    const isPlaceholder = !text ||
-                        text.toLowerCase() === 'ai advisory' ||
-                        text.trim().length < 10;
-                    if (isPlaceholder) return null;
-                    return (
-                        <div key={adv.id || i} style={styles.advCard}>
-                            <div style={{ ...styles.advDot, background: meta.dot }} />
-                            <div style={{ flex: 1 }}>
-                                <span style={{ ...styles.advBadge, color: meta.color, background: meta.bg }}>
-                                    {meta.label}
-                                </span>
-                                <p style={styles.advText}>{text}</p>
-                                <p style={styles.advTime}>{timeAgo(adv.created_at || adv.time)}</p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-// ─── Sub-component: FarmingTipsSection ─────────────────────────
-function FarmingTipsSection({ season }) {
-  const TIPS = {
-    'Rabi Season': [
-      { emoji: '🌾', tip: 'Ideal time for wheat and mustard sowing' },
-      { emoji: '💧', tip: 'Reduce irrigation — dew provides moisture' },
-      { emoji: '🌡️', tip: 'Watch for frost below 5°C at night' },
-      { emoji: '🐛', tip: 'Scout for aphids in wheat crops' },
-    ],
-    'Zaid Season': [
-      { emoji: '☀️', tip: 'High UV — crops need more water in afternoons' },
-      { emoji: '🌿', tip: 'Good time for moong and watermelon' },
-      { emoji: '💦', tip: 'Drip irrigation saves 40% water in summer' },
-      { emoji: '🌡️', tip: 'Mulching reduces soil temperature by 5-8°C' },
-    ],
-    'Kharif Season': [
-      { emoji: '🌧️', tip: 'Check drainage before heavy rain forecast' },
-      { emoji: '🌾', tip: 'Prime time for paddy and cotton sowing' },
-      { emoji: '🐛', tip: 'Monitor for stem borer in paddy fields' },
-      { emoji: '💊', tip: 'Apply basal fertilizer before transplanting' },
-    ],
-  };
-
-  const tips = TIPS[season] || TIPS['Zaid Season'];
+  if (prices.length === 0) return null;
 
   return (
-    <div style={styles.tipsSection}>
-      <div style={styles.tipsSectionHeader}>
-        <p style={styles.sectionLabel}>
-          FARMING TIPS — {season?.toUpperCase()}
-        </p>
-      </div>
-      <div style={styles.tipsGrid}>
-        {tips.map((t, i) => (
-          <div key={i} style={styles.tipCard}>
-            <span style={{ fontSize: 24 }}>{t.emoji}</span>
-            <p style={styles.tipText}>{t.tip}</p>
+    <div className="px-6 mt-10">
+      <SectionHeader title="Live Mandi Prices" actionLabel="Full Market →" />
+      <div className="bg-white border border-gray-100 rounded-[32px] shadow-sm overflow-hidden">
+        {prices.map((p, i) => (
+          <div key={i} className={`flex items-center justify-between p-6 ${i !== prices.length-1 ? 'border-b border-gray-50' : ''}`}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl">
+                {p.commodity === 'Paddy' ? '🌾' : p.commodity === 'Wheat' ? '🌾' : p.commodity === 'Onion' ? '🧅' : '🌱'}
+              </div>
+              <div>
+                <p className="font-black text-gray-900 text-lg leading-tight">{p.commodity}</p>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">📍 {p.market}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex flex-col items-end">
+                <span className="text-green-600 font-black text-xl leading-none">₹{(p.modalPrice/100).toFixed(1)}/kg</span>
+                <div className="flex items-center gap-1 mt-1.5">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Today</span>
+                  <span className="text-[10px] text-green-500 font-bold">↑ 2.4%</span>
+                </div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -381,422 +250,189 @@ function FarmingTipsSection({ season }) {
   );
 }
 
-// ─── Divider ───────────────────────────────────────────────────
-function Divider() {
-    return <div style={{ height: 1, background: RM.gray100, margin: '0 -20px' }} />;
-}
+// ─── SECTION 5: AI ADVISORIES ──────────────────────────────────
+function AIAdvisories({ advisories, loading, error, onRetry }) {
+  if (loading) return (
+    <div className="px-6 mt-10 space-y-5">
+      <SectionHeader title="AI Advisories" />
+      <Skeleton className="h-40 w-full rounded-[32px]" />
+    </div>
+  );
 
-// ─── Main Component ────────────────────────────────────────────
-export default function FarmerHomeScreen({
-    owWeather,
-    owLoading,
-    owError,
-    onLoadWeather,
-    farmerLocation,
-    setFarmerLocation
-}) {
-    const navigate   = useNavigate();
-    const { user }   = useAuth();
+  if (error) return <div className="px-6 mt-10"><ErrorSection message={error} onRetry={onRetry} /></div>;
 
-    // Advisory state — fetched inline (no reusable hook exists)
-    const [advisories, setAdvisories]   = useState([]);
-    const [advLoading, setAdvLoading]   = useState(true);
+  if (advisories.length === 0) return null;
 
-    const [showLocationPopup, setShowLocationPopup] = useState(() => {
-        const saved = getSavedLocation();
-        return !saved || !isLocationFresh(saved);
-    });
-
-    // Soft user fields — user object from localStorage (field names are backend-driven)
-    const farmerName =
-        user?.user_metadata?.full_name ||
-        user?.user_metadata?.name ||
-        user?.name ||
-        user?.full_name ||
-        user?.first_name ||
-        user?.username ||
-        'Farmer';
-    const district   = user?.district || user?.location || 'Andhra Pradesh';
-
-    useEffect(() => {
-        const loadAdvisories = async () => {
-            setAdvLoading(true);
-            try {
-                const res = await api.get('/ai/advisories/').catch(() => ({ data: null }));
-                const list = res?.data?.advisories || res?.data || [];
-                if (Array.isArray(list)) setAdvisories(list.slice(0, 3));
-            } catch { /* silently ignore */ }
-            finally { setAdvLoading(false); }
-        };
-        loadAdvisories();
-    }, []);
-
-    function handleLocationSet(locationData) {
-        setFarmerLocation(locationData);
-        setShowLocationPopup(false);
-    }
-
-    function handleChangeLocation() {
-        setShowLocationPopup(true);
-    }
-
-    const displayLocation = cleanLocationName(farmerLocation);
-
-    return (
-        <div style={styles.page}>
-            {showLocationPopup && (
-                <LocationPopup onLocationSet={handleLocationSet} />
-            )}
-            <HeroSection
-                greeting={getGreeting()}
-                name={farmerName}
-                district={displayLocation || district || ''}
-                temp={owWeather?.temperature ?? null}
-                condition={owWeather?.condition ?? ''}
-                weatherEmoji={getWeatherEmoji(owWeather?.condition)}
-                isLoading={owLoading}
-                isError={!!owError}
-                onRetry={() => onLoadWeather(farmerLocation)}
-                onChangeLocation={handleChangeLocation}
-            />
-
-            <div style={styles.body}>
-                <QuickActions actions={ACTIONS} navigate={navigate} />
-
-                <Divider />
-
-                <WeatherStrip 
-                    weather={owWeather} 
-                    loading={owLoading} 
-                    farmerLocation={farmerLocation}
-                    locationLabel={displayLocation}
-                />
-
-                <Divider />
-
-                {!advLoading && advisories.some(a => {
-                    const t = a.text || a.message || a.content || a.title || '';
-                    return t && t.toLowerCase() !== 'ai advisory' && t.trim().length >= 10;
-                }) && (
-                    <AdvisoryStrip advisories={advisories} />
-                )}
-
-                {!advLoading && !advisories.some(a => {
-                    const t = a.text || a.message || a.content || a.title || '';
-                    return t && t.toLowerCase() !== 'ai advisory' && t.trim().length >= 10;
-                }) && (
-                    <div>
-                        <p style={styles.sectionLabel}>RECENT ADVISORIES</p>
-                        <div style={{
-                            background:   '#f9fafb',
-                            border:       '1px dashed #e5e7eb',
-                            borderRadius: 14,
-                            padding:      '24px 20px',
-                            textAlign:    'center',
-                        }}>
-                            <p style={{ fontSize: 28, margin: '0 0 8px' }}>📋</p>
-                            <p style={{ fontSize: 14, fontWeight: 600, color: '#374151', margin: 0 }}>
-                                No advisories yet
-                            </p>
-                            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
-                                AI advisories for your district will appear here
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                <Divider />
-                <FarmingTipsSection season={getCurrentSeason()} />
+  return (
+    <div className="px-6 mt-10">
+      <SectionHeader title="Recent AI Advisories" actionLabel="All Advisories →" />
+      <div className="space-y-4">
+        {advisories.slice(0, 3).map((adv, i) => (
+          <div key={i} className="group bg-white border border-gray-100 rounded-[32px] p-6 shadow-sm transition-all hover:shadow-lg hover:border-green-100 cursor-pointer">
+            <div className="flex justify-between items-center mb-4">
+              <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider ${
+                adv.category === 'disease_alert' ? 'bg-red-50 text-red-600' : 
+                adv.category === 'weather_advisory' ? 'bg-blue-50 text-blue-600' :
+                'bg-green-50 text-green-600'
+              }`}>
+                {adv.category?.replace(/_/g, ' ') || 'Advisory'}
+              </span>
+              <span className="text-[10px] text-gray-400 font-bold">{adv.time}</span>
             </div>
-        </div>
-    );
+            <p className="text-sm text-gray-700 leading-relaxed font-bold group-hover:text-gray-900 transition-colors">
+              {adv.text?.length > 140 ? adv.text.substring(0, 140) + '...' : adv.text}
+            </p>
+            {adv.text?.length > 140 && <button className="text-green-600 text-xs font-black mt-4 group-hover:translate-x-1 transition-transform inline-block">Read more →</button>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-// ─── Styles ────────────────────────────────────────────────────
-const styles = {
-    page: {
-        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-        background:  'transparent',
-        minHeight:   '100vh',
-    },
-    hero: {
-        position:     'relative',
-        height:       220,
-        overflow:     'hidden',
-        borderRadius: 0,
-    },
-    heroImg: {
-        width:           '100%',
-        height:          '100%',
-        objectFit:       'cover',
-        objectPosition:  'center 60%',
-        display:         'block',
-    },
-    heroOverlay: {
-        position: 'absolute',
-        inset:    0,
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.58) 100%)',
-    },
-    heroContent: {
-        position:        'absolute',
-        inset:           0,
-        padding:         '24px 24px 20px',
-        display:         'flex',
-        flexDirection:   'column',
-        justifyContent:  'space-between',
-    },
-    heroTop: {
-        display:        'flex',
-        justifyContent: 'space-between',
-        alignItems:     'flex-start',
-    },
-    greeting: {
-        color:      'rgba(255,255,255,0.85)',
-        fontSize:   13,
-        fontWeight: 400,
-        margin:     0,
-    },
-    farmerName: {
-        color:         '#ffffff',
-        fontSize:      24,
-        fontWeight:    700,
-        margin:        '2px 0 4px',
-        letterSpacing: '-0.3px',
-    },
-    location: {
-        color:    'rgba(255,255,255,0.75)',
-        fontSize: 12,
-        margin:   0,
-    },
-    weatherChip: {
-        background:     'rgba(255,255,255,0.15)',
-        border:         '1px solid rgba(255,255,255,0.25)',
-        borderRadius:   20,
-        padding:        '10px 14px',
-        display:        'flex',
-        alignItems:     'center',
-        gap:            10,
-        backdropFilter: 'blur(8px)',
-        minWidth:       90,
-    },
-    tempText: {
-        color:      '#ffffff',
-        fontSize:   26,
-        fontWeight: 700,
-        margin:     0,
-        lineHeight: 1,
-    },
-    condText: {
-        color:     'rgba(255,255,255,0.85)',
-        fontSize:  11,
-        margin:    '3px 0 0',
-    },
-    skeleton: {
-        background:  'rgba(255,255,255,0.3)',
-        borderRadius: 4,
-        height:      20,
-        width:       50,
-        animation:   'pulse 1.5s ease-in-out infinite',
-    },
-    retryBtn: {
-        background:   'transparent',
-        border:       '1px solid rgba(255,255,255,0.4)',
-        color:        '#ffffff',
-        fontSize:     10,
-        borderRadius: 8,
-        padding:      '3px 8px',
-        cursor:       'pointer',
-        marginTop:    4,
-    },
-    heroBottom: {
-        display:    'flex',
-        gap:        8,
-        flexWrap:   'wrap',
-    },
-    seasonBadge: {
-        background:   'rgba(255,255,255,0.15)',
-        border:       '1px solid rgba(255,255,255,0.3)',
-        borderRadius: 20,
-        padding:      '5px 12px',
-        color:        '#ffffff',
-        fontSize:     11,
-        fontWeight:   500,
-    },
-    body: {
-        padding:       '20px 24px',
-        display:       'flex',
-        flexDirection: 'column',
-        gap:           20,
-    },
-    sectionLabel: {
-        fontSize:      11,
-        fontWeight:    700,
-        color:         '#9ca3af',
-        letterSpacing: '0.8px',
-        marginBottom:  12,
-        margin:        0,
-    },
-    actionsGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(5, 1fr)',
-        gap: 10,
-        marginBottom: 4,
-    },
-    actionCard: {
-        background: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: 12,
-        padding: '14px 16px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        width: '100%',
-        textAlign: 'left',
-    },
-    actionTextWrap: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    actionLabel: {
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#111827',
-    },
-    actionDesc: {
-        fontSize: 11,
-        color: '#9ca3af',
-        lineHeight: 1.3,
-    },
-    actionIcon: {
-        width: 42,
-        height: 42,
-        borderRadius: 10,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-    },
-    weatherStrip: {
-        background:   '#ffffff',
-        border:       '1px solid #e5e7eb',
-        borderRadius: 16,
-        padding:      '16px',
-    },
-    weatherStripHeader: {
-        display:        'flex',
-        justifyContent: 'space-between',
-        alignItems:     'center',
-        marginBottom:   14,
-    },
-    weatherStripTitle: {
-        fontSize:   14,
-        fontWeight: 700,
-        color:      '#111827',
-        margin:     0,
-    },
-    weatherStripSub: {
-        fontSize: 12,
-        color:    '#9ca3af',
-        margin:   '2px 0 0',
-    },
-    weatherGrid6: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: 8,
-        borderTop: '1px solid #f3f4f6',
-        paddingTop: 14,
-        marginTop: 8,
-    },
-    weatherSub: {
-        fontSize: 9,
-        color: '#16a34a',
-        margin: '2px 0 0',
-        fontWeight: 600,
-    },
-    weatherGrid: {
-        display:             'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap:                 8,
-        borderTop:           '1px solid #f3f4f6',
-        paddingTop:          14,
-    },
-    weatherItem:  { textAlign: 'center' },
-    weatherVal: {
-        fontSize:   15,
-        fontWeight: 700,
-        color:      '#111827',
-        margin:     0,
-    },
-    weatherLabel: {
-        fontSize:  10,
-        color:     '#9ca3af',
-        marginTop: 3,
-    },
-    advCard: {
-        background:   '#ffffff',
-        border:       '1px solid #e5e7eb',
-        borderRadius: 14,
-        padding:      '14px',
-        display:      'flex',
-        gap:          12,
-        alignItems:   'flex-start',
-    },
-    advDot: {
-        width:       8,
-        height:      8,
-        borderRadius: '50%',
-        marginTop:   5,
-        flexShrink:  0,
-    },
-    advBadge: {
-        fontSize:     10,
-        fontWeight:   700,
-        padding:      '3px 8px',
-        borderRadius: 20,
-        display:      'inline-block',
-        marginBottom: 5,
-    },
-    advText: {
-        fontSize:   13,
-        color:      '#374151',
-        lineHeight: 1.5,
-        margin:     0,
-    },
-    advTime: {
-        fontSize:  10,
-        color:     '#9ca3af',
-        marginTop: 5,
-    },
-    tipsSection: {
-        paddingBottom: 24,
-    },
-    tipsSectionHeader: {
-        marginBottom: 12,
-    },
-    tipsGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: 10,
-    },
-    tipCard: {
-        background: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderLeft: '3px solid #16a34a',
-        borderRadius: '0 10px 10px 0',
-        padding: '12px 14px',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 10,
-    },
-    tipText: {
-        fontSize: 13,
-        color: '#374151',
-        lineHeight: 1.5,
-        margin: 0,
-        fontWeight: 500,
-    },
-};
+// ─── SECTION 6: QUICK ACTIONS ──────────────────────────────────
+function QuickActions({ navigate }) {
+  const actions = [
+    { label: 'Crop AI', icon: '🌱', route: '/crop', color: 'bg-green-50 text-green-700 border-green-100' },
+    { label: 'Disease Scan', icon: '🔬', route: '/disease', color: 'bg-red-50 text-red-700 border-red-100' },
+    { label: 'Mandi Prices', icon: '📊', route: '/market', color: 'bg-amber-50 text-amber-700 border-amber-100' },
+    { label: 'Work', icon: '💼', route: '/work', color: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
+    { label: 'Weather', icon: '🌤️', route: '/weather', color: 'bg-blue-50 text-blue-700 border-blue-100' },
+  ];
+
+  return (
+    <div className="px-6 mt-10">
+      <SectionHeader title="Quick Actions" />
+      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-2 px-2">
+        {actions.map(action => (
+          <button 
+            key={action.label} 
+            onClick={() => navigate(action.route)}
+            className={`flex flex-col items-center justify-center p-6 rounded-[32px] min-w-[115px] border shrink-0 transition-all active:scale-90 hover:shadow-md ${action.color}`}
+          >
+            <div className="text-3xl mb-3 shadow-md bg-white/50 w-12 h-12 flex items-center justify-center rounded-2xl">{action.icon}</div>
+            <span className="text-[12px] font-black text-center leading-tight uppercase tracking-tight">{action.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── SECTION 7: REAL USER STATS ────────────────────────────────
+function UserStats({ profile, user }) {
+  if (!profile?.farm_size_acres && !profile?.disease_scan_count) {
+    return null;
+  }
+
+  const stats = [
+    { label: 'Farm Size', value: profile?.farm_size_acres ? `${profile.farm_size_acres} ac` : 'Link Farm', icon: '🚜', color: 'bg-emerald-50' },
+    { label: 'Disease Scans', value: profile?.disease_scan_count ?? 0, icon: '🔬', color: 'bg-rose-50' },
+    { label: 'Member Since', value: new Date(user?.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }), icon: '🌱', color: 'bg-sky-50' },
+    { label: 'Saved Reports', value: profile?.reports_saved ?? 0, icon: '📋', color: 'bg-indigo-50' },
+  ];
+
+  return (
+    <div className="px-6 mt-10">
+      <SectionHeader title="Your Farm Intelligence" />
+      <div className="grid grid-cols-2 gap-4">
+        {stats.map(s => (
+          <div key={s.label} className="bg-white border border-gray-100 rounded-[32px] p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`p-2 rounded-xl ${s.color}`}>
+                <span className="text-lg">{s.icon}</span>
+              </div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[1.5px] leading-tight">{s.label}</p>
+            </div>
+            <p className="text-2xl font-black text-gray-900 tracking-tight">{s.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── SECTION 8: FARMING TIPS ──────────────────────────────────
+function FarmingTips({ advisories, loading }) {
+  if (loading) return null;
+  
+  if (advisories.length === 0) return null;
+
+  return (
+    <div className="px-6 mt-10 pb-40">
+      <SectionHeader title="Expert Context" />
+      <div className="space-y-4">
+        {advisories.filter(a => a.category === 'crop_recommendation' || a.category === 'general_tip').map((tip, i) => (
+          <div key={i} className="flex items-start gap-4 bg-green-900 border border-green-800 rounded-[32px] p-7 shadow-2xl">
+            <div className="bg-green-800 p-3 rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-2xl">💡</span>
+            </div>
+            <p className="text-sm text-green-50 font-bold leading-relaxed">{tip.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ────────────────────────────────────────────
+export default function FarmerHomeScreen() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { 
+    weather, 
+    location, 
+    mandiPrices, 
+    advisories, 
+    profile, 
+    loading, 
+    errors, 
+    lastUpdated,
+    refresh,
+    refreshWeather,
+    refreshMandi,
+    refreshAdvisories
+  } = useDashboard();
+
+  const [showLocationPopup, setShowLocationPopup] = useState(false);
+
+  // Filter to remove empty or placeholder advisories (ZERO DUMMY DATA RULE)
+  const validAdvisories = useMemo(() => {
+    return advisories.filter(a => a.text && a.text.trim() !== '' && a.text !== 'AI advisory' && a.text !== 'Dashboard advisory');
+  }, [advisories]);
+
+  return (
+    <div className="min-h-screen bg-gray-50/50 pb-10 font-DM-Sans selection:bg-green-100">
+      {showLocationPopup && (
+        <LocationPopup onLocationSet={(loc) => {
+          setShowLocationPopup(false);
+          refresh();
+        }} />
+      )}
+
+      <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-[0_0_80px_rgba(0,0,0,0.03)] border-x border-gray-100">
+        <HeroSection 
+          user={user} 
+          location={location} 
+          weather={weather} 
+          loading={loading.weather} 
+          onChangeLocation={() => setShowLocationPopup(true)} 
+        />
+
+        <div className="pb-10">
+          <WeatherAlerts weather={weather} />
+          
+          <WeatherStrip 
+            weather={weather} 
+            loading={loading.weather} 
+            lastUpdated={lastUpdated.weather} 
+          />
+
+          <QuickActions navigate={navigate} />
+
+          <FarmingTips advisories={validAdvisories} loading={loading.advisories} />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -28,7 +28,7 @@ export default function Navbar() {
           </div>
           <div>
             <span className="font-display text-xl font-bold text-foreground">Rythu Mitra</span>
-            <p className="text-[10px] leading-none text-muted-foreground">AI-Powered Farmer Intelligence</p>
+            <p className="text-sm leading-none text-muted-foreground">AI-Powered Farmer Intelligence</p>
           </div>
         </div>
 
@@ -72,25 +72,25 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 top-[72px] z-50 bg-green-gradient flex flex-col items-center justify-center gap-8 lg:hidden">
+        <div className="fixed inset-0 top-[72px] z-50 bg-green-gradient flex flex-col items-center justify-center gap-6 pb-20 lg:hidden overflow-y-auto">
           {navLinks.map((link) => (
             <a
               key={link}
               href={`#${link.toLowerCase().replace(/ /g, "-")}`}
               onClick={() => setMobileOpen(false)}
-              className="font-display text-2xl font-bold text-primary-foreground"
+              className="font-display text-xl sm:text-2xl font-bold text-primary-foreground"
             >
               {link}
             </a>
           ))}
-          <div className="flex flex-col gap-3 mt-8">
+          <div className="flex flex-col w-full px-8 max-w-[300px] gap-3 mt-6">
             <button
               type="button"
               onClick={() => {
                 setMobileOpen(false);
                 navigate("/login");
               }}
-              className="btn-rythu border-2 border-primary-foreground px-8 py-3 text-center text-primary-foreground"
+              className="btn-rythu border-2 border-primary-foreground w-full py-3 text-center text-primary-foreground"
             >
               Log in
             </button>
@@ -100,7 +100,7 @@ export default function Navbar() {
                 setMobileOpen(false);
                 navigate("/register");
               }}
-              className="btn-rythu bg-card px-8 py-3 text-center text-primary"
+              className="btn-rythu bg-card w-full py-3 text-center text-primary"
             >
               Create account
             </button>

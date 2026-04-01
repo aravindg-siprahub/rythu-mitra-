@@ -102,8 +102,8 @@ export default function RoleSelect() {
       minHeight: '100vh', display: 'flex', alignItems: 'center',
       justifyContent: 'center', background: '#F0FDF4', padding: '16px'
     }}>
-      <div style={{
-        background: '#fff', padding: '32px 24px', borderRadius: 24,
+        <div className="p-6 md:p-8" style={{
+        background: '#fff', borderRadius: 24,
         boxShadow: '0 10px 40px rgba(0,0,0,0.08)', width: '100%', maxWidth: 400
       }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1B5E20',
@@ -124,12 +124,12 @@ export default function RoleSelect() {
         }}
         onMouseEnter={e => !loading && (e.currentTarget.style.borderColor = '#2E7D32')}
         onMouseLeave={e => !loading && (e.currentTarget.style.borderColor = '#E0E0E0')}>
-          <span style={{ fontSize: 48 }}>🌾</span>
-          <div>
+          <span style={{ fontSize: 48, flexShrink: 0 }}>🌾</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#1B5E20' }}>
               Farmer
             </div>
-            <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: '#666', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Post jobs, find workers, tractors & transport
             </div>
           </div>
@@ -144,12 +144,12 @@ export default function RoleSelect() {
         }}
         onMouseEnter={e => !loading && (e.currentTarget.style.borderColor = '#1565C0')}
         onMouseLeave={e => !loading && (e.currentTarget.style.borderColor = '#E0E0E0')}>
-          <span style={{ fontSize: 48 }}>🧑‍🌾</span>
-          <div>
+          <span style={{ fontSize: 48, flexShrink: 0 }}>🧑‍🌾</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#1565C0' }}>
               Farm worker
             </div>
-            <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: '#666', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Find daily wage work, apply, get hired
             </div>
           </div>
@@ -164,12 +164,12 @@ export default function RoleSelect() {
         }}
         onMouseEnter={e => !loading && (e.currentTarget.style.borderColor = '#1565C0')}
         onMouseLeave={e => !loading && (e.currentTarget.style.borderColor = '#E0E0E0')}>
-          <span style={{ fontSize: 48 }}>🚜</span>
-          <div>
+          <span style={{ fontSize: 48, flexShrink: 0 }}>🚜</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#1565C0' }}>
               Worker / Vehicle Owner
             </div>
-            <div style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: '#666', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Browse jobs, apply, earn daily income
             </div>
           </div>

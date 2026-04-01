@@ -49,7 +49,7 @@ export default function Login() {
             <div style={styles.bgCircle1} />
             <div style={styles.bgCircle2} />
 
-            <div style={styles.card}>
+            <div className="w-full max-w-sm mx-auto p-4 sm:p-6 md:p-8" style={styles.card}>
                 {/* Brand */}
                 <div style={styles.brand}>
                     <div style={styles.brandIcon}>
@@ -153,10 +153,11 @@ export default function Login() {
 
 const inputStyle = (hasError) => ({
     width:        '100%',
+    minHeight:    48,
     padding:      '11px 14px 11px 40px',
     border:       `1.5px solid ${hasError ? '#f87171' : '#e5e7eb'}`,
     borderRadius: 10,
-    fontSize:     14,
+    fontSize:     16, /* text-base avoids iOS zoom */
     color:        '#111827',
     background:   hasError ? '#fef2f2' : '#fafafa',
     boxSizing:    'border-box',
@@ -180,7 +181,7 @@ const styles = {
         borderRadius: '50%', background: 'rgba(22,163,74,0.04)', pointerEvents: 'none',
     },
     card: {
-        background: '#ffffff', borderRadius: 20, padding: '40px 36px',
+        background: '#ffffff', borderRadius: 20,
         width: '100%', maxWidth: 440,
         boxShadow: '0 8px 40px rgba(0,0,0,0.10)', position: 'relative', zIndex: 1,
     },
@@ -192,27 +193,29 @@ const styles = {
         color: '#ffffff', flexShrink: 0,
     },
     brandName: { fontWeight: 700, fontSize: 16, color: '#14532d', lineHeight: 1.2 },
-    brandSub:  { fontSize: 10, color: '#6b7280', lineHeight: 1.2 },
+    brandSub:  { fontSize: 14, color: '#6b7280', lineHeight: 1.2 },
     heading:   { fontSize: 22, fontWeight: 700, color: '#111827', margin: '0 0 4px 0' },
-    sub:       { fontSize: 13, color: '#6b7280', margin: '0 0 24px 0' },
+    sub:       { fontSize: 14, color: '#6b7280', margin: '0 0 24px 0' },
     form:      { display: 'flex', flexDirection: 'column', gap: 16 },
-    fieldGroup:{ display: 'flex', flexDirection: 'column', gap: 5 },
-    label:     { fontSize: 13, fontWeight: 600, color: '#374151' },
+    fieldGroup:{ display: 'flex', flexDirection: 'column', gap: 8 },
+    label:     { fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: '8px' },
     inputWrap: { position: 'relative', display: 'flex', alignItems: 'center' },
-    icon:      { position: 'absolute', left: 12, fontSize: 14, pointerEvents: 'none', zIndex: 1 },
+    icon:      { position: 'absolute', left: 12, fontSize: 16, pointerEvents: 'none', zIndex: 1 },
     eyeBtn:    {
         position: 'absolute', right: 12, background: 'none', border: 'none',
         cursor: 'pointer', color: '#9ca3af', fontSize: 16, padding: 0,
+        minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center'
     },
     errorBox: {
         background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8,
-        padding: '10px 14px', fontSize: 13, color: '#dc2626',
+        padding: '10px 14px', fontSize: 14, color: '#dc2626',
         display: 'flex', alignItems: 'center', gap: 6,
     },
     btn: {
-        background: 'linear-gradient(135deg, #16a34a, #15803d)',
-        color: '#ffffff', border: 'none', borderRadius: 10, padding: '13px 20px',
-        fontSize: 15, fontWeight: 600, cursor: 'pointer',
+        width: '100%',
+        background: 'linear-gradient(135deg, #15803d, #16a34a)',
+        color: '#ffffff', border: 'none', borderRadius: 10, padding: '12px 20px',
+        fontSize: 16, fontWeight: 600, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 8, marginTop: 8, transition: 'opacity 0.2s',
     },

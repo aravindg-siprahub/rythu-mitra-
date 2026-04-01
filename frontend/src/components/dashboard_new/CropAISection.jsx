@@ -241,7 +241,7 @@ export default function CropAISection() {
                             {/* All recommendations list */}
                             {result.length > 1 && (
                                 <div className="mt-2 space-y-1 w-full text-left">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">All Recommendations</p>
+                                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">All Recommendations</p>
                                     {result.slice(1).map((r, i) => (
                                         <div key={i} className="flex items-center justify-between text-xs">
                                             <span className="text-foreground font-medium">{r.crop}</span>
@@ -281,7 +281,7 @@ export default function CropAISection() {
                         <div key={crop.name} className="farm-card-hover w-36 flex-shrink-0 text-center p-4">
                             <p className="text-3xl mb-1">{crop.emoji}</p>
                             <p className="font-semibold text-sm text-foreground">{crop.name}</p>
-                            <span className="farm-badge text-[10px] mt-1">{crop.season}</span>
+                            <span className="farm-badge text-sm mt-1">{crop.season}</span>
                             <p className="text-xs text-muted-foreground mt-1">{crop.yield}</p>
                             <p className={`text-xs font-mono font-semibold ${crop.trend === '↑' ? 'text-farm-success' : 'text-farm-danger'}`}>
                                 {crop.trend} Price

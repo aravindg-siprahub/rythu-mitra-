@@ -63,7 +63,7 @@ export default function DemoPreview() {
               <div className="mt-3 flex gap-2">
                 {["Mon", "Tue", "Wed", "Thu", "Fri"].map((d) => (
                   <div key={d} className="flex-1 rounded-lg bg-muted py-2 text-center">
-                    <div className="text-[10px] text-muted-foreground">{d}</div>
+                    <div className="text-sm text-muted-foreground">{d}</div>
                     <div className="mt-1 text-xs font-bold text-foreground">—</div>
                   </div>
                 ))}

@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import DashboardSidebar from '../components/dashboard_new/DashboardSidebar';
-import DashboardHeader from '../components/dashboard_new/DashboardHeader';
-import MobileBottomNav from '../components/layout/MobileBottomNav';
 import FarmerHomeScreen from './dashboard_new/FarmerHomeScreen';
 import { getSavedLocation, isLocationFresh, cleanLocationName } from '../utils/locationService';
 import { fetchOpenWeather } from '../utils/openWeather';
@@ -52,24 +50,14 @@ export default function DashboardNew() {
 
             {/* Full-width main content */}
             <div style={{ width: '100%' }}>
-                <DashboardHeader 
-                    onMenuClick={() => setSidebarOpen(true)}
+                <FarmerHomeScreen 
                     owWeather={owWeather}
-                    displayLocation={cleanLocationName(farmerLocation)}
+                    owLoading={owLoading}
+                    owError={owError}
+                    onLoadWeather={loadWeather}
+                    farmerLocation={farmerLocation}
+                    setFarmerLocation={setFarmerLocation}
                 />
-
-                <main style={{ paddingBottom: 80 }}>
-                    <FarmerHomeScreen 
-                        owWeather={owWeather}
-                        owLoading={owLoading}
-                        owError={owError}
-                        onLoadWeather={loadWeather}
-                        farmerLocation={farmerLocation}
-                        setFarmerLocation={setFarmerLocation}
-                    />
-                </main>
-
-                <MobileBottomNav />
             </div>
         </div>
     );

@@ -116,13 +116,13 @@ export default function ServicesSection() {
                                         <span>{w.rating} ({w.reviews})</span>
                                     </div>
                                     <div className="flex gap-1 mt-1">
-                                        {w.skills.map(s => <span key={s} className="farm-badge text-[10px]">{s}</span>)}
+                                        {w.skills.map(s => <span key={s} className="farm-badge text-sm">{s}</span>)}
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <p className="font-mono font-bold text-sm text-foreground">₹{w.rate}</p>
-                                    <p className="text-[10px] text-muted-foreground">/day</p>
-                                    {w.available && <span className="text-[10px] text-farm-success font-medium">✅ Available</span>}
+                                    <p className="text-sm text-muted-foreground">/day</p>
+                                    {w.available && <span className="text-sm text-farm-success font-medium">✅ Available</span>}
                                 </div>
                             </motion.div>
                         ))}
@@ -186,7 +186,7 @@ export default function ServicesSection() {
                                 </div>
                                 <div className="text-right">
                                     <p className="font-mono font-bold text-sm text-foreground">{v.rate}</p>
-                                    {v.gps && <span className="text-[10px] text-farm-success font-medium">🟢 GPS</span>}
+                                    {v.gps && <span className="text-sm text-farm-success font-medium">🟢 GPS</span>}
                                 </div>
                             </motion.div>
                         ))}

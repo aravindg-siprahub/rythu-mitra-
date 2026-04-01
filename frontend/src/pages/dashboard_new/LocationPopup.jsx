@@ -210,7 +210,7 @@ const S = {
     background: '#ffffff',
     borderRadius: 20,
     padding: '32px 28px',
-    maxWidth: 380,
+    maxWidth: 'min(380px, calc(100vw - 32px))',
     width: '100%',
     textAlign: 'center',
     boxShadow: '0 20px 60px rgba(0,0,0,0.2)',

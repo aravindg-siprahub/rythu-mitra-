@@ -43,20 +43,11 @@ export function AlertProvider({ children }) {
 
             {/* Alert banner container */}
             {alerts.length > 0 && (
-                <div style={{
-                    position: 'fixed',
-                    top: 16,
-                    right: 16,
-                    zIndex: 9999,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
-                    maxWidth: 360,
-                }}>
+                <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[9999] flex flex-col gap-2 items-center sm:items-end pointer-events-none">
                     {alerts.map(alert => {
                         const colors = alertColors[alert.type] || alertColors.info;
                         return (
-                            <div key={alert.id} style={{
+                            <div key={alert.id} className="pointer-events-auto w-full sm:w-auto min-w-[300px] sm:max-w-[360px]" style={{
                                 background:   colors.bg,
                                 border:       `1px solid ${colors.border}`,
                                 borderRadius: 12,
@@ -65,7 +56,7 @@ export function AlertProvider({ children }) {
                                 alignItems:   'flex-start',
                                 gap:          10,
                                 boxShadow:    '0 4px 12px rgba(0,0,0,0.1)',
-                                animation:    'slideIn 0.2s ease',
+                                animation:    'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                             }}>
                                 <span style={{ fontSize: 16 }}>
                                     {alertIcons[alert.type]}

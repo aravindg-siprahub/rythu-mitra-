@@ -52,7 +52,7 @@ export default function HeroSection() {
           India-focused agricultural intelligence for your field
         </div>
 
-        <h1 className="font-display text-4xl font-bold leading-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight text-primary-foreground">
           Empowering Every
           <br />
           <span className="text-gradient">Indian Farmer</span>
@@ -66,21 +66,21 @@ export default function HeroSection() {
           real Indian conditions.
         </p>
 
-        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <div className="mt-8 flex flex-col items-center gap-4 w-full sm:flex-row sm:justify-center">
           <button
             type="button"
             onClick={() => navigate("/register")}
-            className="btn-rythu shimmer flex flex-col items-center bg-card px-8 py-4 text-primary shadow-green-lg hover:scale-105"
+            className="btn-rythu shimmer flex flex-col items-center justify-center w-full max-w-[280px] sm:w-auto bg-card px-6 py-4 text-primary shadow-green-lg hover:scale-[1.02] sm:hover:scale-105"
           >
-            <span className="text-lg font-bold">Create free account</span>
-            <span className="text-xs text-muted-foreground">Farmers register with email</span>
+            <span className="text-base sm:text-lg font-bold">Create free account</span>
+            <span className="text-sm sm:text-xs text-muted-foreground mt-1">Farmers register with email</span>
           </button>
           <a
             href="#features"
-            className="btn-rythu flex flex-col items-center border-2 border-primary-foreground/40 px-8 py-4 text-primary-foreground hover:bg-primary-foreground/10"
+            className="btn-rythu flex flex-col items-center justify-center w-full max-w-[280px] sm:w-auto border-2 border-primary-foreground/40 px-6 py-4 text-primary-foreground hover:bg-primary-foreground/10"
           >
-            <span className="text-lg font-bold">Explore features</span>
-            <span className="text-xs text-primary-foreground/60">See what the console offers</span>
+            <span className="text-base sm:text-lg font-bold">Explore features</span>
+            <span className="text-sm sm:text-xs text-primary-foreground/60 mt-1">See what the console offers</span>
           </a>
         </div>
 

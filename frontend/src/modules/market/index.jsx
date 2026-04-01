@@ -292,7 +292,7 @@ export default function MarketModule() {
                                                 {parseFloat(pct) >= 0 ? '+' : ''}{pct}%
                                             </p>
                                         )}
-                                        <p className="text-[9px] mt-0.5" style={{ color: THEME.colors.textMuted }}>₹/quintal</p>
+                                        <p className="text-sm mt-0.5" style={{ color: THEME.colors.textMuted }}>₹/quintal</p>
                                     </div>
                                 ) : <div key={label}></div>)}
                             </div>
@@ -437,7 +437,7 @@ export default function MarketModule() {
                                         </AreaChart>
                                     </ResponsiveContainer>
                                     
-                                    <div className="text-center mt-2 text-[12px] text-gray-500 mb-1">
+                                    <div className="text-center mt-2 text-xs text-gray-500 mb-1">
                                         ── Predicted price &nbsp;&nbsp;&nbsp; ╌ ╌ Confidence range
                                     </div>
                                     <div style={{
@@ -523,13 +523,13 @@ export default function MarketModule() {
                                 <div className="grid grid-cols-2 gap-3 mb-2">
                                     {(result.best_selling_time || result.best_time_to_sell) && (
                                         <div className="bg-white p-3 rounded-lg border border-blue-200">
-                                            <p className="text-[10px] font-bold text-blue-600 uppercase">Best Time to Sell</p>
+                                            <p className="text-sm font-bold text-blue-600 uppercase">Best Time to Sell</p>
                                             <p className="text-sm font-bold text-blue-900">{result.best_selling_time || result.best_time_to_sell}</p>
                                         </div>
                                     )}
                                     {(result.best_mandi || result.recommended_mandi) && (
                                         <div className="bg-white p-3 rounded-lg border border-blue-200">
-                                            <p className="text-[10px] font-bold text-blue-600 uppercase">Recommended Mandi</p>
+                                            <p className="text-sm font-bold text-blue-600 uppercase">Recommended Mandi</p>
                                             <p className="text-sm font-bold text-blue-900">{result.best_mandi || result.recommended_mandi}</p>
                                         </div>
                                     )}
@@ -537,8 +537,8 @@ export default function MarketModule() {
                                 
                                 {(result.explanation?.farmer_advisory || result.what_to_do) && (
                                     <div style={{ marginTop: '12px' }}>
-                                        <h4 className="text-[10px] uppercase font-bold text-gray-500 mb-1">What to do</h4>
-                                        <p className="text-[13px] font-medium" style={{ color: '#166534' }}>
+                                        <h4 className="text-sm uppercase font-bold text-gray-500 mb-1">What to do</h4>
+                                        <p className="text-sm font-medium" style={{ color: '#166534' }}>
                                             {result.explanation?.farmer_advisory || result.what_to_do}
                                         </p>
                                     </div>
