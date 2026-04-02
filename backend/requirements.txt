@@ -10,6 +10,7 @@ djangorestframework
 django-cors-headers
 django-celery-results
 whitenoise
+gunicorn
 python-decouple
 supabase
 cryptography

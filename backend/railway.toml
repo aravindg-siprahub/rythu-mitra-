@@ -1,5 +1,5 @@
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 
 [deploy]
 startCommand = 'sh -c "celery -A rythu_mitra worker -l info & gunicorn rythu_mitra.wsgi:application --bind 0.0.0.0:$PORT"'
