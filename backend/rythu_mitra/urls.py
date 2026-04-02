@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 from apps.core.views import (
     crop_recommend, disease_detect, market_predict, weather_forecast,
-    task_status, ai_status, ai_metrics, ai_metrics_trends, ai_advisories, ai_advisories_stats
+    task_status, ai_status, ai_metrics, ai_metrics_trends, ai_advisories, ai_advisories_stats,
+    home
 )
 
 # Supabase Persistence Audit & Fixes
@@ -50,6 +51,7 @@ def health_check(request):
 
 
 urlpatterns = [
+    path('', home, name='home'),
     path('api/v1/health/', health_check, name='health_check'),
     path('api/v1/auth/', include('apps.auth_app.urls')),
     path('api/v1/auth/profile/', include('apps.auth_app.profile_urls')),

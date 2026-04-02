@@ -485,3 +485,10 @@ def ai_advisories_stats(request):
         'per_week': 3.2,
         'by_type': by_type,
     })
+
+
+from django.http import HttpResponse
+
+def home(request):
+    """Simple root healthcheck to confirm deployment stability."""
+    return HttpResponse("Backend is LIVE 🚀")
