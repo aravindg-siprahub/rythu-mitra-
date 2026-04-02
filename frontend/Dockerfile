@@ -3,8 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-ARG VITE_API_URL=http://13.48.149.125:8000
-ENV VITE_API_URL=$VITE_API_URL
+ARG REACT_APP_API_URL=https://rythu-mitra.up.railway.app
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
 RUN npm run build
 
 FROM nginx:alpine
