@@ -1207,3 +1207,12 @@ Rules:
     except Exception as exc:
         logger.error(f"Weather advisory task failed: {exc}")
         raise self.retry(exc=exc, countdown=5)
+
+@shared_task(bind=True)
+def test_task(self):
+    """
+    A simple task to verify Celery workers are functioning.
+    Will log execution output to help test local/production deployment.
+    """
+    logger.info("🟢 Executing test_task — Celery is successfully processing tasks!")
+    return "Test Task Completed Successfully"

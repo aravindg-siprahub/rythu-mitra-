@@ -13,3 +13,4 @@ whitenoise
 python-decouple
 supabase
 cryptography
+gunicorn
